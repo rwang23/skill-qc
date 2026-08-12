@@ -301,7 +301,7 @@ description: Read a packaged resource and summarize it. Use when a user asks for
             )
 
             self.assertEqual(report["summary"]["gate_status"], "BLOCKED")
-            self.assertTrue(finding["file"].endswith("scripts\\run.ps1"))
+            self.assertTrue(Path(finding["file"]).as_posix().endswith("scripts/run.ps1"))
             self.assertNotIn(leaked_value, json.dumps(report))
 
     def test_destructive_example_inside_explicit_guard_is_not_a_blocker(self) -> None:
