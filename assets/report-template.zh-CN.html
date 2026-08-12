@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>__REPORT_TITLE__</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f3f0e8;
+      --paper-raised: #fbfaf6;
+      --ink: #17231f;
+      --muted: #64716b;
+      --line: #d5d8cf;
+      --forest: #0b5b4b;
+      --mint: #b9dbcb;
+      --coral: #d7684e;
+      --gold: #d7ad53;
+      --shadow: 0 24px 70px rgba(23, 35, 31, .10);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(23, 35, 31, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23, 35, 31, .035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 32px 32px;
+      font-family: "Aptos", "Trebuchet MS", sans-serif;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; }
+    button { font: inherit; }
+    .audit-page { min-height: 100vh; }
+    .shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 82px;
+      border-bottom: 1px solid rgba(23, 35, 31, .14);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: -.03em; }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--forest);
+      border-radius: 50% 50% 50% 12%;
+      font: 700 15px/1 Georgia, serif;
+    }
+    .mast-meta { color: var(--muted); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.45fr .75fr;
+      gap: 54px;
+      padding: 76px 0 64px;
+      align-items: center;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--forest);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--coral); }
+    h1, h2, h3 { margin: 0; }
+    h1 {
+      max-width: 820px;
+      margin-top: 18px;
+      font: 500 clamp(48px, 7.3vw, 92px)/.92 Georgia, serif;
+      letter-spacing: -.065em;
+    }
+    .hero-copy { max-width: 720px; margin: 26px 0 0; color: var(--muted); font-size: 19px; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 30px; }
+    .tag { padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(251, 250, 246, .66); font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+    .tag[data-gate="PASS"] { color: var(--forest); border-color: rgba(11, 91, 75, .35); }
+    .tag[data-gate="REVIEW"] { color: #8a5a00; border-color: rgba(138, 90, 0, .35); }
+    .tag[data-gate="BLOCKED"] { color: #9b2f28; border-color: rgba(155, 47, 40, .35); }
+
+    .score-orbit {
+      position: relative;
+      width: min(310px, 76vw);
+      aspect-ratio: 1;
+      justify-self: end;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: conic-gradient(var(--forest) calc(var(--score) * 1%), rgba(11, 91, 75, .12) 0);
+      box-shadow: var(--shadow);
+    }
+    .score-orbit::before { content: ""; position: absolute; inset: 18px; background: var(--paper-raised); border-radius: 50%; }
+    .score-inner { position: relative; text-align: center; }
+    .score-value { font: 500 92px/.82 Georgia, serif; letter-spacing: -.08em; }
+    .score-max { color: var(--muted); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+    .score-label { margin-top: 13px; color: var(--forest); font-weight: 800; }
+
+    .triad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 86px; }
+    .signal-card { padding: 23px 24px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(251, 250, 246, .78); }
+    .signal-label { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .signal-value { margin-top: 8px; font: 500 30px/1 Georgia, serif; }
+    .signal-note { margin: 9px 0 0; color: var(--muted); font-size: 13px; }
+
+    section { padding: 0 0 92px; }
+    .section-head { display: grid; grid-template-columns: .7fr 1.3fr; gap: 50px; align-items: end; margin-bottom: 32px; }
+    .section-kicker { color: var(--coral); font-size: 12px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    h2 { margin-top: 9px; font: 500 clamp(34px, 5vw, 58px)/1 Georgia, serif; letter-spacing: -.045em; }
+    .section-intro { margin: 0; color: var(--muted); font-size: 17px; }
+
+    .dimension-overview { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .dimension-strip { padding: 19px 20px; background: var(--paper-raised); border: 1px solid var(--line); border-radius: 16px; }
+    .dimension-line { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+    .dimension-name { font-weight: 800; }
+    .dimension-score { font: 500 22px/1 Georgia, serif; }
+    .dimension-score small { color: var(--muted); font: 12px/1 "Aptos", "Trebuchet MS", sans-serif; }
+    .bar { height: 8px; margin-top: 14px; overflow: hidden; background: #e4e6df; border-radius: 99px; }
+    .bar > span { display: block; width: var(--percent); height: 100%; border-radius: inherit; background: var(--forest); }
+
+    .dimension-details { display: grid; gap: 18px; }
+    .dimension-card {
+      display: grid;
+      grid-template-columns: 108px 1fr;
+      gap: 28px;
+      padding: 30px;
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 28px rgba(23, 35, 31, .035);
+    }
+    .dimension-index { color: var(--coral); font: 500 48px/1 Georgia, serif; }
+    .dimension-title-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .dimension-title-row h3 { font: 500 27px/1.05 Georgia, serif; }
+    .score-pill { flex: none; padding: 8px 11px; border-radius: 999px; color: var(--forest); background: var(--mint); font-weight: 800; }
+    .explain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 25px; }
+    .explain-label { margin-bottom: 9px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .explain-list { margin: 0; padding-left: 19px; }
+    .explain-list li + li { margin-top: 8px; }
+    .improve { padding-left: 17px; border-left: 3px solid var(--gold); }
+    .deduction { margin-top: 20px; padding: 13px 15px; border-radius: 12px; background: #f5e9e4; color: #773d33; font: 12px/1.55 ui-monospace, "Cascadia Mono", monospace; }
+
+    .findings { display: grid; gap: 12px; }
+    .finding { display: grid; grid-template-columns: 82px 1fr auto; gap: 17px; align-items: start; padding: 20px; border-top: 1px solid var(--line); }
+    .severity { font-size: 11px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .severity.blocker, .severity.high { color: #a33b31; }
+    .severity.medium { color: #8a5a00; }
+    .severity.low, .severity.info { color: var(--forest); }
+    .finding-code { margin-bottom: 5px; font: 12px/1.4 ui-monospace, "Cascadia Mono", monospace; color: var(--muted); }
+    .finding-message { font-size: 16px; }
+    .finding-points { white-space: nowrap; color: var(--coral); font-weight: 900; }
+    .empty { padding: 42px; border: 1px dashed rgba(11, 91, 75, .38); border-radius: var(--radius); color: var(--forest); background: rgba(185, 219, 203, .22); text-align: center; }
+
+    .method { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .method-card { padding: 22px; background: #17231f; color: #f8f6ef; border-radius: 18px; }
+    .method-card strong { display: block; color: #cce8da; font: 500 24px/1.1 Georgia, serif; }
+    .method-card p { margin: 11px 0 0; color: #b9c4bf; font-size: 13px; }
+    footer { padding: 25px 0 44px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    .footer-row { display: flex; justify-content: space-between; gap: 20px; }
+
+    @media (max-width: 820px) {
+      .hero, .section-head { grid-template-columns: 1fr; }
+      .score-orbit { justify-self: start; }
+      .triad, .method { grid-template-columns: 1fr; }
+      .dimension-overview { grid-template-columns: 1fr; }
+      .dimension-card { grid-template-columns: 1fr; }
+      .dimension-index { font-size: 30px; }
+      .explain-grid { grid-template-columns: 1fr; }
+      .finding { grid-template-columns: 72px 1fr; }
+      .finding-points { grid-column: 2; }
+    }
+    @media (max-width: 520px) {
+      .shell { width: min(100% - 24px, 1180px); }
+      .mast-meta { display: none; }
+      .hero { padding-top: 48px; }
+      h1 { font-size: 47px; }
+      .dimension-card { padding: 22px; }
+      .dimension-title-row { align-items: flex-start; }
+      .footer-row { display: block; }
+    }
+    @media print {
+      body { background: white; }
+      .shell { width: 100%; max-width: none; }
+      .dimension-card, .signal-card, .method-card { break-inside: avoid; box-shadow: none; }
+      section { padding-bottom: 48px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="audit-page" id="app"></main>
+  <script>
+    const report = __AUDIT_DATA__;
+    const labels = {
+      routing: "路由能力",
+      executability: "可执行性",
+      context: "上下文效率",
+      resources: "资源组织",
+      safety: "安全性",
+      portability: "可移植性",
+      effectiveness: "有效性准备度",
+      maintainability: "可维护性"
+    };
+    const defaultReasons = {
+      routing: "名称、Description、Trigger 和目录一致性通过了全部计分检查。",
+      executability: "激活后的正文给出了明确、可执行的工作流。",
+      context: "SKILL.md 保持聚焦，并符合渐进披露的上下文预算。",
+      resources: "本地资源按需加载，文中引用的路径均可解析。",
+      safety: "未检测到泄露凭据、指令绕过或缺少保护的破坏性操作。",
+      portability: "未检测到未声明的用户路径、固定模型依赖或机器专属假设。",
+      effectiveness: "当前 Skill 包具备其成熟度所要求的路由与回归材料。",
+      maintainability: "未检测到未完成的可执行指令或生命周期不一致。"
+    };
+    const defaultImprovements = {
+      routing: "每次发布前，用新的正例、反例和近邻例重新验证 Description。",
+      executability: "运行一个代表性任务，收紧任何依赖隐含判断的步骤。",
+      context: "持续把 SKILL.md 控制在 500 行以内，新增细节放入直接链接的参考文件。",
+      resources: "复查每个资源链接，并只在真正需要它的步骤加载。",
+      safety: "每次增加新能力时，重新审查权限和破坏性操作的保护条件。",
+      portability: "在另一个受支持的客户端或环境中实测后，再声明更广泛的兼容性。",
+      effectiveness: "用同一版本的目标客户端运行记录升级独立证据等级；E4 还需责任人复核。",
+      maintainability: "每次发布都重新运行包结构、路由和报告测试。"
+    };
+    const findingMessages = {
+      "routing.frontmatter-invalid": "SKILL.md 必须以有效的 YAML frontmatter 开头。",
+      "routing.name-missing": "frontmatter 缺少必填的 Skill 名称。",
+      "routing.name-invalid": "名称必须不超过 64 个字符，并只使用小写字母、数字和单个连字符。",
+      "routing.name-folder-mismatch": "frontmatter 名称与所在目录名称不一致。",
+      "routing.description-missing": "缺少用于发现和路由的 Description。",
+      "routing.description-over-spec-limit": "Description 超过 Agent Skills 规范的 1,024 字符上限。",
+      "routing.description-too-thin": "Description 不足以稳定表达能力与触发条件。",
+      "routing.trigger-missing": "Description 没有清楚说明何时应当触发。",
+      "routing.description-over-250": "Description 偏长，应把路由信息前置并压缩。",
+      "executability.workflow-missing": "正文以背景说明为主，缺少简短可执行的工作流。",
+      "executability.package-maintenance-in-body": "安装、许可证或变更记录不应占用激活后的工作流正文。",
+      "context.body-over-500-lines": "SKILL.md 超过 500 行，详细材料应拆到直接引用的资源中。",
+      "context.name-as-heading": "一级标题重复了 Skill 名称，浪费激活上下文。",
+      "resources.inline-examples-excessive": "正文内嵌示例或代码过多，应拆到外部资源。",
+      "resources.monolithic-body": "长正文没有利用脚本、参考资料或资产进行渐进披露。",
+      "resources.reference-missing": "一个相对资源链接无法在 Skill 包内解析。",
+      "maintainability.unfinished-marker": "可执行指令中仍有未完成标记。",
+      "portability.user-path": "用户专属绝对路径阻碍可移植复用。",
+      "portability.user-path-local-profile": "该用户路径仅在声明的本机配置中成立。",
+      "portability.hardcoded-model": "正文固定了具体模型，应改用能力要求或可配置路由。",
+      "verification.eval-suite-missing": "当前成熟度要求路由回归测试，但包内没有 eval suite。",
+      "verification.eval-suite-absent": "包内没有路由测试；存在路由混淆时应补充。",
+      "verification.routing-case-coverage": "路由测试缺少必需的案例类型。",
+      "verification.pressure-case-missing": "路由测试缺少压力或对抗案例。",
+      "verification.eval-suite-invalid": "路由测试文件无法读取或格式无效。",
+      "effectiveness.evidence-invalid": "外部证据缺少有效的 E3/E4 等级或版本绑定字段。",
+      "effectiveness.evidence-revision-mismatch": "行为证据对应的是另一个 SKILL.md 版本，因此不计入。",
+      "safety.secret-pattern": "检测到疑似硬编码凭据；报告不会显示具体值。",
+      "safety.destructive-unguarded": "破坏性命令附近缺少禁止、确认、范围或回滚保护。",
+      "safety.instruction-bypass": "指令试图绕过政策、审批或更高优先级约束。"
+    };
+    const findingImprovements = {
+      "routing.frontmatter-invalid": "在 SKILL.md 顶部添加有效的 YAML frontmatter。",
+      "routing.name-missing": "在 frontmatter 中声明小写连字符格式的名称。",
+      "routing.name-invalid": "把名称改为只含小写字母、数字和单个连字符。",
+      "routing.name-folder-mismatch": "让 frontmatter 名称与所在目录完全一致。",
+      "routing.description-missing": "补充同时说明能力和触发条件的简洁 Description。",
+      "routing.description-over-spec-limit": "把 Description 压缩到 1,024 字符以内，细节移到正文。",
+      "routing.description-too-thin": "明确写出做什么、哪些请求应触发、关键近邻场景不应触发。",
+      "routing.trigger-missing": "增加明确的 Use when 条件和至少一个重要排除边界。",
+      "routing.description-over-250": "前置能力和 Trigger，删除不参与路由的细节。",
+      "executability.workflow-missing": "用简短的祈使式步骤替换背景堆叠，并明确输出。",
+      "executability.package-maintenance-in-body": "把安装、许可证和变更记录移出激活正文。",
+      "context.body-over-500-lines": "把详细示例和参考内容外置，同时保留可执行主流程。",
+      "context.name-as-heading": "删除重复标题，直接从工作流或决策边界开始。",
+      "resources.inline-examples-excessive": "把重复示例或代码移入直接链接的资源文件。",
+      "resources.monolithic-body": "将可复用代码、参考资料或资产拆为按需加载资源。",
+      "resources.reference-missing": "恢复缺失文件，或改为可解析的包内相对路径。",
+      "maintainability.unfinished-marker": "发布前完成或删除未完成的执行指令。",
+      "portability.user-path": "改用相对路径、参数或明确声明的配置输入。",
+      "portability.user-path-local-profile": "明确本机限定，并确保公开包不携带该路径。",
+      "portability.hardcoded-model": "按能力路由，或把模型作为配置项。",
+      "verification.eval-suite-missing": "补充正例、反例、近邻例、留出例和压力例。",
+      "verification.eval-suite-absent": "如存在路由混淆，添加一组聚焦的路由测试。",
+      "verification.routing-case-coverage": "补齐缺失案例，并记录预期选择边界。",
+      "verification.pressure-case-missing": "增加一个在时限或越权压力下仍保持安全边界的案例。",
+      "verification.eval-suite-invalid": "修复 evals/evals.json 并验证案例结构。",
+      "effectiveness.evidence-invalid": "提供字段完整、绑定当前版本的 E3 或 E4 证据记录。",
+      "effectiveness.evidence-revision-mismatch": "针对当前 SKILL.md 版本重新运行行为测试。",
+      "safety.secret-pattern": "删除并轮换凭据，改从安全的运行时配置读取。",
+      "safety.destructive-unguarded": "增加精确范围、明确确认、备份或 dry-run，以及回滚路径。",
+      "safety.instruction-bypass": "删除绕过指令，保留更高优先级政策和审批边界。"
+    };
+    const evidenceClaims = {
+      E1: "静态结构扫描",
+      E2: "确定性路由测试",
+      E3: "目标客户端路由或代表性任务运行",
+      E4: "真实运行记录加责任人复核"
+    };
+    const escapeHtml = (value) => String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+    const skill = report.skill;
+    const summary = report.summary;
+    const dimensions = report.dimensions;
+    const generatedAt = "__GENERATED_AT__";
+
+    const dimensionOverview = dimensions.map((item) => {
+      const percent = Math.round((item.score / item.weight) * 100);
+      return `<article class="dimension-strip">
+        <div class="dimension-line"><span class="dimension-name">${escapeHtml(labels[item.id] || item.id)}</span><span class="dimension-score">${item.score}<small> / ${item.weight}</small></span></div>
+        <div class="bar" role="progressbar" aria-label="${escapeHtml(labels[item.id] || item.id)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="--percent:${percent}%"></span></div>
+      </article>`;
+    }).join("");
+
+    const dimensionDetails = dimensions.map((item, index) => {
+      const related = report.findings.filter((finding) => finding.dimension === item.id);
+      const scored = related.filter((finding) => Number(finding.points_lost) > 0);
+      const reasonValues = scored.length
+        ? scored.map((finding) => `扣除 ${finding.points_lost} 分：${findingMessages[finding.code] || finding.message}`)
+        : [defaultReasons[item.id]];
+      const improvementValues = related.length
+        ? [...new Set(related.map((finding) => findingImprovements[finding.code] || defaultImprovements[item.id]))]
+        : [defaultImprovements[item.id]];
+      const reasons = reasonValues.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("");
+      const improvements = improvementValues.map((improvement) => `<li>${escapeHtml(improvement)}</li>`).join("");
+      const deductions = item.deductions.length
+        ? `<div class="deduction">${item.deductions.map((entry) => `${escapeHtml(entry.code)} · −${entry.points_lost} · ${escapeHtml(entry.file)}:${entry.line}`).join("<br>")}</div>`
+        : "";
+      return `<article class="dimension-card">
+        <div class="dimension-index">${String(index + 1).padStart(2, "0")}</div>
+        <div>
+          <div class="dimension-title-row"><h3>${escapeHtml(labels[item.id] || item.id)}</h3><span class="score-pill">${item.score} / ${item.weight}</span></div>
+          <div class="explain-grid">
+            <div><div class="explain-label">评分理由</div><ul class="explain-list">${reasons}</ul></div>
+            <div class="improve"><div class="explain-label">如何改进</div><ul class="explain-list">${improvements}</ul></div>
+          </div>
+          ${deductions}
+        </div>
+      </article>`;
+    }).join("");
+
+    const findings = report.findings.length
+      ? report.findings.map((item) => `<article class="finding">
+          <div class="severity ${escapeHtml(item.severity)}">${escapeHtml(item.severity)}</div>
+          <div><div class="finding-code">${escapeHtml(item.code)} · ${escapeHtml(labels[item.dimension] || item.dimension)}</div><div class="finding-message">${escapeHtml(findingMessages[item.code] || item.message)}</div></div>
+          <div class="finding-points">${item.points_lost ? `−${item.points_lost}` : "复核"}</div>
+        </article>`).join("")
+      : `<div class="empty">未检测到需要扣分的缺陷。行为能力的声明范围仍由证据等级限定。</div>`;
+
+    document.getElementById("app").innerHTML = `
+      <div class="shell">
+        <header class="masthead"><div class="brand"><span class="brand-mark">SR</span>SkillRigor</div><div class="mast-meta">单 Skill 审计 · 评分规则 ${escapeHtml(report.rubric_version)}</div></header>
+        <section class="hero">
+          <div>
+            <div class="eyebrow">Agent Skill 质量审计报告</div>
+            <h1>${escapeHtml(skill.name)}</h1>
+            <p class="hero-copy">面向单个 Agent Skill 包的只读评估。质量分、安全门与行为证据相互独立，避免高分掩盖风险，也避免把静态检查包装成真实效果。</p>
+            <div class="hero-tags"><span class="tag" data-gate="${escapeHtml(summary.gate_status)}">${escapeHtml(summary.gate_status)}</span><span class="tag">证据 ${escapeHtml(report.evidence.grade)}</span><span class="tag">${escapeHtml(skill.profile)}</span><span class="tag">${escapeHtml(skill.maturity)}</span></div>
+          </div>
+          <div class="score-orbit" style="--score:${summary.quality_score}"><div class="score-inner"><div class="score-value">${summary.quality_score}</div><div class="score-max">满分 100</div><div class="score-label">Skill 包质量</div></div></div>
+        </section>
+
+        <div class="triad">
+          <article class="signal-card"><div class="signal-label">安全门</div><div class="signal-value">${escapeHtml(summary.gate_status)}</div><p class="signal-note">不可补偿的高风险问题不会被总分平均掉。</p></article>
+          <article class="signal-card"><div class="signal-label">证据等级</div><div class="signal-value">${escapeHtml(report.evidence.grade)}</div><p class="signal-note">${escapeHtml(evidenceClaims[report.evidence.grade] || report.evidence.claim)}，不代表所有真实场景都已验证。</p></article>
+          <article class="signal-card"><div class="signal-label">迭代轮次</div><div class="signal-value">第 ${report.iteration.number} 轮</div><p class="signal-note">${report.iteration.score_delta == null ? "本轮建立初始基线" : `相对基线 ${report.iteration.score_delta >= 0 ? "+" : ""}${report.iteration.score_delta} 分`}。</p></article>
+        </div>
+
+        <section>
+          <div class="section-head"><div><div class="section-kicker">01 · 分数结构</div><h2>八个维度，<br>每一分都有来由。</h2></div><p class="section-intro">总分由各维度相加，但每个维度都保留独立理由、证据位置和下一步建议。质量分满分不会自动抬高证据等级。</p></div>
+          <div class="dimension-overview">${dimensionOverview}</div>
+        </section>
+
+        <section>
+          <div class="section-head"><div><div class="section-kicker">02 · 分维度复核</div><h2>先解释评分，<br>再给改进方向。</h2></div><p class="section-intro">每张卡片先陈述当前观察，再给出最小、可执行的下一步。</p></div>
+          <div class="dimension-details">${dimensionDetails}</div>
+        </section>
+
+        <section>
+          <div class="section-head"><div><div class="section-kicker">03 · 审计发现</div><h2>现在最值得<br>处理什么。</h2></div><p class="section-intro">发现项来自确定性规则。涉及上下文、安全意图和特殊写法时，仍需人工复核。</p></div>
+          <div class="findings">${findings}</div>
+        </section>
+
+        <section>
+          <div class="section-head"><div><div class="section-kicker">04 · 如何阅读</div><h2>不只看分数，<br>更要看证据。</h2></div><p class="section-intro">SkillRigor 有意拆开包质量、安全边界和行为证明。</p></div>
+          <div class="method">
+            <article class="method-card"><strong>${summary.quality_score}/100 质量分</strong><p>表示评分规则 ${escapeHtml(report.rubric_version)} 在当前包中观察到的结构与契约质量。</p></article>
+            <article class="method-card"><strong>${escapeHtml(summary.gate_status)} 安全门</strong><p>Blocker 或高风险问题不能被平均分抵消。</p></article>
+            <article class="method-card"><strong>${escapeHtml(report.evidence.grade)} 证据</strong><p>${escapeHtml(evidenceClaims[report.evidence.grade] || report.evidence.claim)}，只在已记录范围内成立。</p></article>
+          </div>
+        </section>
+
+        <footer><div class="footer-row"><span>由 SkillRigor 生成 · ${escapeHtml(generatedAt)}</span><span>目标版本 ${escapeHtml(skill.revision.slice(0, 12))} · 只读审计</span></div></footer>
+      </div>`;
+  </script>
+</body>
+</html>

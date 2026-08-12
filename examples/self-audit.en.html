@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skill Quality Report</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f3f0e8;
+      --paper-raised: #fbfaf6;
+      --ink: #17231f;
+      --muted: #64716b;
+      --line: #d5d8cf;
+      --forest: #0b5b4b;
+      --mint: #b9dbcb;
+      --coral: #d7684e;
+      --gold: #d7ad53;
+      --shadow: 0 24px 70px rgba(23, 35, 31, .10);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(23, 35, 31, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23, 35, 31, .035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 32px 32px;
+      font-family: "Aptos", "Trebuchet MS", sans-serif;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; }
+    button { font: inherit; }
+    .audit-page { min-height: 100vh; }
+    .shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 82px;
+      border-bottom: 1px solid rgba(23, 35, 31, .14);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: -.03em; }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--forest);
+      border-radius: 50% 50% 50% 12%;
+      font: 700 15px/1 Georgia, serif;
+    }
+    .mast-meta { color: var(--muted); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.45fr .75fr;
+      gap: 54px;
+      padding: 76px 0 64px;
+      align-items: center;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--forest);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--coral); }
+    h1, h2, h3 { margin: 0; }
+    h1 {
+      max-width: 820px;
+      margin-top: 18px;
+      font: 500 clamp(48px, 7.3vw, 92px)/.92 Georgia, serif;
+      letter-spacing: -.065em;
+    }
+    .hero-copy { max-width: 720px; margin: 26px 0 0; color: var(--muted); font-size: 19px; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 30px; }
+    .tag { padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(251, 250, 246, .66); font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+    .tag[data-gate="PASS"] { color: var(--forest); border-color: rgba(11, 91, 75, .35); }
+    .tag[data-gate="REVIEW"] { color: #8a5a00; border-color: rgba(138, 90, 0, .35); }
+    .tag[data-gate="BLOCKED"] { color: #9b2f28; border-color: rgba(155, 47, 40, .35); }
+
+    .score-orbit {
+      position: relative;
+      width: min(310px, 76vw);
+      aspect-ratio: 1;
+      justify-self: end;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: conic-gradient(var(--forest) calc(var(--score) * 1%), rgba(11, 91, 75, .12) 0);
+      box-shadow: var(--shadow);
+    }
+    .score-orbit::before { content: ""; position: absolute; inset: 18px; background: var(--paper-raised); border-radius: 50%; }
+    .score-inner { position: relative; text-align: center; }
+    .score-value { font: 500 92px/.82 Georgia, serif; letter-spacing: -.08em; }
+    .score-max { color: var(--muted); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+    .score-label { margin-top: 13px; color: var(--forest); font-weight: 800; }
+
+    .triad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 86px; }
+    .signal-card { padding: 23px 24px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(251, 250, 246, .78); }
+    .signal-label { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .signal-value { margin-top: 8px; font: 500 30px/1 Georgia, serif; }
+    .signal-note { margin: 9px 0 0; color: var(--muted); font-size: 13px; }
+
+    section { padding: 0 0 92px; }
+    .section-head { display: grid; grid-template-columns: .7fr 1.3fr; gap: 50px; align-items: end; margin-bottom: 32px; }
+    .section-kicker { color: var(--coral); font-size: 12px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    h2 { margin-top: 9px; font: 500 clamp(34px, 5vw, 58px)/1 Georgia, serif; letter-spacing: -.045em; }
+    .section-intro { margin: 0; color: var(--muted); font-size: 17px; }
+
+    .dimension-overview { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .dimension-strip { padding: 19px 20px; background: var(--paper-raised); border: 1px solid var(--line); border-radius: 16px; }
+    .dimension-line { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+    .dimension-name { font-weight: 800; }
+    .dimension-score { font: 500 22px/1 Georgia, serif; }
+    .dimension-score small { color: var(--muted); font: 12px/1 "Aptos", "Trebuchet MS", sans-serif; }
+    .bar { height: 8px; margin-top: 14px; overflow: hidden; background: #e4e6df; border-radius: 99px; }
+    .bar > span { display: block; width: var(--percent); height: 100%; border-radius: inherit; background: var(--forest); }
+
+    .dimension-details { display: grid; gap: 18px; }
+    .dimension-card {
+      display: grid;
+      grid-template-columns: 108px 1fr;
+      gap: 28px;
+      padding: 30px;
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 28px rgba(23, 35, 31, .035);
+    }
+    .dimension-index { color: var(--coral); font: 500 48px/1 Georgia, serif; }
+    .dimension-title-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .dimension-title-row h3 { font: 500 27px/1.05 Georgia, serif; }
+    .score-pill { flex: none; padding: 8px 11px; border-radius: 999px; color: var(--forest); background: var(--mint); font-weight: 800; }
+    .explain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 25px; }
+    .explain-label { margin-bottom: 9px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .explain-list { margin: 0; padding-left: 19px; }
+    .explain-list li + li { margin-top: 8px; }
+    .improve { padding-left: 17px; border-left: 3px solid var(--gold); }
+    .deduction { margin-top: 20px; padding: 13px 15px; border-radius: 12px; background: #f5e9e4; color: #773d33; font: 12px/1.55 ui-monospace, "Cascadia Mono", monospace; }
+
+    .findings { display: grid; gap: 12px; }
+    .finding { display: grid; grid-template-columns: 82px 1fr auto; gap: 17px; align-items: start; padding: 20px; border-top: 1px solid var(--line); }
+    .severity { font-size: 11px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .severity.blocker, .severity.high { color: #a33b31; }
+    .severity.medium { color: #8a5a00; }
+    .severity.low, .severity.info { color: var(--forest); }
+    .finding-code { margin-bottom: 5px; font: 12px/1.4 ui-monospace, "Cascadia Mono", monospace; color: var(--muted); }
+    .finding-message { font-size: 16px; }
+    .finding-points { white-space: nowrap; color: var(--coral); font-weight: 900; }
+    .empty { padding: 42px; border: 1px dashed rgba(11, 91, 75, .38); border-radius: var(--radius); color: var(--forest); background: rgba(185, 219, 203, .22); text-align: center; }
+
+    .method { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .method-card { padding: 22px; background: #17231f; color: #f8f6ef; border-radius: 18px; }
+    .method-card strong { display: block; color: #cce8da; font: 500 24px/1.1 Georgia, serif; }
+    .method-card p { margin: 11px 0 0; color: #b9c4bf; font-size: 13px; }
+    footer { padding: 25px 0 44px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    .footer-row { display: flex; justify-content: space-between; gap: 20px; }
+
+    @media (max-width: 820px) {
+      .hero, .section-head { grid-template-columns: 1fr; }
+      .score-orbit { justify-self: start; }
+      .triad, .method { grid-template-columns: 1fr; }
+      .dimension-overview { grid-template-columns: 1fr; }
+      .dimension-card { grid-template-columns: 1fr; }
+      .dimension-index { font-size: 30px; }
+      .explain-grid { grid-template-columns: 1fr; }
+      .finding { grid-template-columns: 72px 1fr; }
+      .finding-points { grid-column: 2; }
+    }
+    @media (max-width: 520px) {
+      .shell { width: min(100% - 24px, 1180px); }
+      .mast-meta { display: none; }
+      .hero { padding-top: 48px; }
+      h1 { font-size: 47px; }
+      .dimension-card { padding: 22px; }
+      .dimension-title-row { align-items: flex-start; }
+      .footer-row { display: block; }
+    }
+    @media print {
+      body { background: white; }
+      .shell { width: 100%; max-width: none; }
+      .dimension-card, .signal-card, .method-card { break-inside: avoid; box-shadow: none; }
+      section { padding-bottom: 48px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="audit-page" id="app"></main>
+  <script>
+    const report = {"schema_version":2,"rubric_version":"1.0.0","mode":"single","target":"\u003cSKILL:skill-rigor\u003e","summary":{"quality_score":100,"score_scope":"artifact-quality","gate_status":"PASS","finding_count":0},"dimensions":[{"id":"routing","weight":18,"score":18,"status":"excellent","reasons":["Name, description, trigger conditions, and folder alignment passed every scored routing check."],"improvements":["Revalidate the description with fresh positive, negative, and near-neighbor prompts before each release."],"deductions":[]},{"id":"executability","weight":16,"score":16,"status":"excellent","reasons":["The activated body exposes an actionable workflow with explicit execution steps."],"improvements":["Run one representative task and tighten any workflow step that requires unstated judgment."],"deductions":[]},{"id":"context","weight":10,"score":10,"status":"excellent","reasons":["The main SKILL.md stays focused and within the progressive-disclosure context budget."],"improvements":["Keep SKILL.md below 500 lines and move new detail into directly linked references."],"deductions":[]},{"id":"resources","weight":9,"score":9,"status":"excellent","reasons":["Local resources are organized for progressive loading and every referenced path resolves."],"improvements":["Recheck every linked resource and load it only at the workflow step that needs it."],"deductions":[]},{"id":"safety","weight":20,"score":20,"status":"excellent","reasons":["No exposed secret, instruction bypass, or unguarded destructive action was detected."],"improvements":["Repeat the permission and destructive-action review whenever the Skill gains a new capability."],"deductions":[]},{"id":"portability","weight":8,"score":8,"status":"excellent","reasons":["No undeclared user path, concrete model dependency, or machine-specific assumption was detected."],"improvements":["Test the package on another supported client or environment before claiming broader compatibility."],"deductions":[]},{"id":"effectiveness","weight":12,"score":12,"status":"excellent","reasons":["The package includes the routing and regression artifacts required for its declared maturity."],"improvements":["Advance the separate evidence grade with a same-revision target-client trace; use accountable operating review for E4."],"deductions":[]},{"id":"maintainability","weight":7,"score":7,"status":"excellent","reasons":["The package contains no unfinished executable instructions or lifecycle mismatch detected by the rubric."],"improvements":["Rerun package, routing, and report checks on every tagged release."],"deductions":[]}],"findings":[],"skill":{"name":"skill-rigor","path":"\u003cSKILL:skill-rigor\u003e","revision":"2d27630648cb934266dd9615dcddb0469180d2af2fe5ad0c3a742705484c8ce2","profile":"portable","maturity":"governed","line_count":45,"description_length":239,"quality_score":100,"gate_status":"PASS","evidence":{"grade":"E2","coverage":60,"claim":"balanced routing regression fixtures","source":null,"observed_at":null},"dimensions":[{"id":"routing","weight":18,"score":18,"status":"excellent","reasons":["Name, description, trigger conditions, and folder alignment passed every scored routing check."],"improvements":["Revalidate the description with fresh positive, negative, and near-neighbor prompts before each release."],"deductions":[]},{"id":"executability","weight":16,"score":16,"status":"excellent","reasons":["The activated body exposes an actionable workflow with explicit execution steps."],"improvements":["Run one representative task and tighten any workflow step that requires unstated judgment."],"deductions":[]},{"id":"context","weight":10,"score":10,"status":"excellent","reasons":["The main SKILL.md stays focused and within the progressive-disclosure context budget."],"improvements":["Keep SKILL.md below 500 lines and move new detail into directly linked references."],"deductions":[]},{"id":"resources","weight":9,"score":9,"status":"excellent","reasons":["Local resources are organized for progressive loading and every referenced path resolves."],"improvements":["Recheck every linked resource and load it only at the workflow step that needs it."],"deductions":[]},{"id":"safety","weight":20,"score":20,"status":"excellent","reasons":["No exposed secret, instruction bypass, or unguarded destructive action was detected."],"improvements":["Repeat the permission and destructive-action review whenever the Skill gains a new capability."],"deductions":[]},{"id":"portability","weight":8,"score":8,"status":"excellent","reasons":["No undeclared user path, concrete model dependency, or machine-specific assumption was detected."],"improvements":["Test the package on another supported client or environment before claiming broader compatibility."],"deductions":[]},{"id":"effectiveness","weight":12,"score":12,"status":"excellent","reasons":["The package includes the routing and regression artifacts required for its declared maturity."],"improvements":["Advance the separate evidence grade with a same-revision target-client trace; use accountable operating review for E4."],"deductions":[]},{"id":"maintainability","weight":7,"score":7,"status":"excellent","reasons":["The package contains no unfinished executable instructions or lifecycle mismatch detected by the rubric."],"improvements":["Rerun package, routing, and report checks on every tagged release."],"deductions":[]}],"findings":[]},"evidence":{"grade":"E2","coverage":60,"claim":"balanced routing regression fixtures","source":null,"observed_at":null},"iteration":{"number":1,"score_delta":null,"resolved_findings":[],"new_findings":[]},"generated_at":"2026-08-11T23:21:19-04:00"};
+    const labels = {
+      routing: "Routing",
+      executability: "Executability",
+      context: "Context efficiency",
+      resources: "Resource design",
+      safety: "Safety",
+      portability: "Portability",
+      effectiveness: "Effectiveness readiness",
+      maintainability: "Maintainability"
+    };
+    const escapeHtml = (value) => String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+    const skill = report.skill;
+    const summary = report.summary;
+    const dimensions = report.dimensions;
+    const generatedAt = "2026-08-11T23:21:19-04:00";
+
+    const dimensionOverview = dimensions.map((item) => {
+      const percent = Math.round((item.score / item.weight) * 100);
+      return `<article class="dimension-strip">
+        <div class="dimension-line"><span class="dimension-name">${escapeHtml(labels[item.id] || item.id)}</span><span class="dimension-score">${item.score}<small> / ${item.weight}</small></span></div>
+        <div class="bar" role="progressbar" aria-label="${escapeHtml(labels[item.id] || item.id)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="--percent:${percent}%"></span></div>
+      </article>`;
+    }).join("");
+
+    const dimensionDetails = dimensions.map((item, index) => {
+      const reasons = item.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("");
+      const improvements = item.improvements.map((improvement) => `<li>${escapeHtml(improvement)}</li>`).join("");
+      const deductions = item.deductions.length
+        ? `<div class="deduction">${item.deductions.map((entry) => `${escapeHtml(entry.code)} · −${entry.points_lost} · ${escapeHtml(entry.file)}:${entry.line}`).join("<br>")}</div>`
+        : "";
+      return `<article class="dimension-card">
+        <div class="dimension-index">${String(index + 1).padStart(2, "0")}</div>
+        <div>
+          <div class="dimension-title-row"><h3>${escapeHtml(labels[item.id] || item.id)}</h3><span class="score-pill">${item.score} / ${item.weight}</span></div>
+          <div class="explain-grid">
+            <div><div class="explain-label">Why this score</div><ul class="explain-list">${reasons}</ul></div>
+            <div class="improve"><div class="explain-label">How to improve</div><ul class="explain-list">${improvements}</ul></div>
+          </div>
+          ${deductions}
+        </div>
+      </article>`;
+    }).join("");
+
+    const findings = report.findings.length
+      ? report.findings.map((item) => `<article class="finding">
+          <div class="severity ${escapeHtml(item.severity)}">${escapeHtml(item.severity)}</div>
+          <div><div class="finding-code">${escapeHtml(item.code)} · ${escapeHtml(item.dimension)}</div><div class="finding-message">${escapeHtml(item.message)}</div></div>
+          <div class="finding-points">${item.points_lost ? `−${item.points_lost}` : "review"}</div>
+        </article>`).join("")
+      : `<div class="empty">No rubric-scored defect was detected. The evidence grade still limits behavioral claims.</div>`;
+
+    document.getElementById("app").innerHTML = `
+      <div class="shell">
+        <header class="masthead"><div class="brand"><span class="brand-mark">SR</span>SkillRigor</div><div class="mast-meta">Single-Skill Audit · Rubric ${escapeHtml(report.rubric_version)}</div></header>
+        <section class="hero">
+          <div>
+            <div class="eyebrow">Skill Quality Report</div>
+            <h1>${escapeHtml(skill.name)}</h1>
+            <p class="hero-copy">A read-only assessment of one Agent Skill package. Artifact quality, safety gate, and behavioral evidence stay separate so a polished score cannot hide risk or overstate real-world proof.</p>
+            <div class="hero-tags"><span class="tag" data-gate="${escapeHtml(summary.gate_status)}">${escapeHtml(summary.gate_status)}</span><span class="tag">Evidence ${escapeHtml(report.evidence.grade)}</span><span class="tag">${escapeHtml(skill.profile)}</span><span class="tag">${escapeHtml(skill.maturity)}</span></div>
+          </div>
+          <div class="score-orbit" style="--score:${summary.quality_score}"><div class="score-inner"><div class="score-value">${summary.quality_score}</div><div class="score-max">out of 100</div><div class="score-label">Artifact quality</div></div></div>
+        </section>
+
+        <div class="triad">
+          <article class="signal-card"><div class="signal-label">Safety gate</div><div class="signal-value">${escapeHtml(summary.gate_status)}</div><p class="signal-note">Non-compensable blockers remain independent of the score.</p></article>
+          <article class="signal-card"><div class="signal-label">Evidence grade</div><div class="signal-value">${escapeHtml(report.evidence.grade)}</div><p class="signal-note">${escapeHtml(report.evidence.claim)}. Not a blanket effectiveness claim.</p></article>
+          <article class="signal-card"><div class="signal-label">Iteration</div><div class="signal-value">Round ${report.iteration.number}</div><p class="signal-note">${report.iteration.score_delta == null ? "Initial baseline" : `${report.iteration.score_delta >= 0 ? "+" : ""}${report.iteration.score_delta} points from baseline`}.</p></article>
+        </div>
+
+        <section>
+          <div class="section-head"><div><div class="section-kicker">01 · Score anatomy</div><h2>Eight dimensions.<br>One visible logic.</h2></div><p class="section-intro">The total is additive, but each dimension keeps its own reasons, evidence-linked deductions, and next improvement. A full artifact score does not upgrade the evidence grade.</p></div>
+          <div class="dimension-overview">${dimensionOverview}</div>
+        </section>
+
+        <section>
+          <div class="section-head"><div><div class="section-kicker">02 · Dimension review</div><h2>Why each point<br>was earned.</h2></div><p class="section-intro">Read these cards as an audit trail: current observation first, then the smallest useful next step.</p></div>
+          <div class="dimension-details">${dimensionDetails}</div>
+        </section>
+
+        <section>
+          <div class="section-head"><div><div class="section-kicker">03 · Findings</div><h2>What deserves<br>attention now.</h2></div><p class="section-intro">Findings are deterministic review signals. Context-sensitive safety and intent findings still require human adjudication.</p></div>
+          <div class="findings">${findings}</div>
+        </section>
+
+        <section>
+          <div class="section-head"><div><div class="section-kicker">04 · Reading contract</div><h2>Score less.<br>Know more.</h2></div><p class="section-intro">SkillRigor deliberately separates package conformance, safety, and proof of behavior.</p></div>
+          <div class="method">
+            <article class="method-card"><strong>${summary.quality_score}/100 quality</strong><p>Observed package properties under rubric ${escapeHtml(report.rubric_version)}.</p></article>
+            <article class="method-card"><strong>${escapeHtml(summary.gate_status)} gate</strong><p>A blocker or high-severity risk cannot be averaged away.</p></article>
+            <article class="method-card"><strong>${escapeHtml(report.evidence.grade)} evidence</strong><p>${escapeHtml(report.evidence.claim)} within the recorded scope.</p></article>
+          </div>
+        </section>
+
+        <footer><div class="footer-row"><span>Generated by SkillRigor · ${escapeHtml(generatedAt)}</span><span>Target revision ${escapeHtml(skill.revision.slice(0, 12))} · Read-only audit</span></div></footer>
+      </div>`;
+  </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+name: quality
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run regression suite
+        run: python -m unittest discover -s tests -v
+      - name: Generate self-audit
+        run: |
+          python scripts/skill_audit.py audit . \
+            --profile portable \
+            --maturity governed \
+            --locale en \
+            --json-out self-audit.json \
+            --html-out self-audit.html
+      - name: Verify self-audit contract
+        run: |
+          python -c "import json; r=json.load(open('self-audit.json', encoding='utf-8')); assert r['summary']['quality_score'] == 100; assert r['summary']['gate_status'] == 'PASS'; assert r['evidence']['grade'] == 'E2'"

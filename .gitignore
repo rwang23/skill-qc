@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.audit-work/
+.venv/
+venv/
+.coverage
+htmlcov/
+audit.json
+audit.html
+round-*.json
+round-*.html

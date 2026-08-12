@@ -1,0 +1,258 @@
+{
+  "schema_version": 2,
+  "rubric_version": "1.0.0",
+  "mode": "single",
+  "target": "<SKILL:skill-rigor>",
+  "summary": {
+    "quality_score": 100,
+    "score_scope": "artifact-quality",
+    "gate_status": "PASS",
+    "finding_count": 0
+  },
+  "dimensions": [
+    {
+      "id": "routing",
+      "weight": 18,
+      "score": 18,
+      "status": "excellent",
+      "reasons": [
+        "Name, description, trigger conditions, and folder alignment passed every scored routing check."
+      ],
+      "improvements": [
+        "Revalidate the description with fresh positive, negative, and near-neighbor prompts before each release."
+      ],
+      "deductions": []
+    },
+    {
+      "id": "executability",
+      "weight": 16,
+      "score": 16,
+      "status": "excellent",
+      "reasons": [
+        "The activated body exposes an actionable workflow with explicit execution steps."
+      ],
+      "improvements": [
+        "Run one representative task and tighten any workflow step that requires unstated judgment."
+      ],
+      "deductions": []
+    },
+    {
+      "id": "context",
+      "weight": 10,
+      "score": 10,
+      "status": "excellent",
+      "reasons": [
+        "The main SKILL.md stays focused and within the progressive-disclosure context budget."
+      ],
+      "improvements": [
+        "Keep SKILL.md below 500 lines and move new detail into directly linked references."
+      ],
+      "deductions": []
+    },
+    {
+      "id": "resources",
+      "weight": 9,
+      "score": 9,
+      "status": "excellent",
+      "reasons": [
+        "Local resources are organized for progressive loading and every referenced path resolves."
+      ],
+      "improvements": [
+        "Recheck every linked resource and load it only at the workflow step that needs it."
+      ],
+      "deductions": []
+    },
+    {
+      "id": "safety",
+      "weight": 20,
+      "score": 20,
+      "status": "excellent",
+      "reasons": [
+        "No exposed secret, instruction bypass, or unguarded destructive action was detected."
+      ],
+      "improvements": [
+        "Repeat the permission and destructive-action review whenever the Skill gains a new capability."
+      ],
+      "deductions": []
+    },
+    {
+      "id": "portability",
+      "weight": 8,
+      "score": 8,
+      "status": "excellent",
+      "reasons": [
+        "No undeclared user path, concrete model dependency, or machine-specific assumption was detected."
+      ],
+      "improvements": [
+        "Test the package on another supported client or environment before claiming broader compatibility."
+      ],
+      "deductions": []
+    },
+    {
+      "id": "effectiveness",
+      "weight": 12,
+      "score": 12,
+      "status": "excellent",
+      "reasons": [
+        "The package includes the routing and regression artifacts required for its declared maturity."
+      ],
+      "improvements": [
+        "Advance the separate evidence grade with a same-revision target-client trace; use accountable operating review for E4."
+      ],
+      "deductions": []
+    },
+    {
+      "id": "maintainability",
+      "weight": 7,
+      "score": 7,
+      "status": "excellent",
+      "reasons": [
+        "The package contains no unfinished executable instructions or lifecycle mismatch detected by the rubric."
+      ],
+      "improvements": [
+        "Rerun package, routing, and report checks on every tagged release."
+      ],
+      "deductions": []
+    }
+  ],
+  "findings": [],
+  "skill": {
+    "name": "skill-rigor",
+    "path": "<SKILL:skill-rigor>",
+    "revision": "2d27630648cb934266dd9615dcddb0469180d2af2fe5ad0c3a742705484c8ce2",
+    "profile": "portable",
+    "maturity": "governed",
+    "line_count": 45,
+    "description_length": 239,
+    "quality_score": 100,
+    "gate_status": "PASS",
+    "evidence": {
+      "grade": "E2",
+      "coverage": 60,
+      "claim": "balanced routing regression fixtures",
+      "source": null,
+      "observed_at": null
+    },
+    "dimensions": [
+      {
+        "id": "routing",
+        "weight": 18,
+        "score": 18,
+        "status": "excellent",
+        "reasons": [
+          "Name, description, trigger conditions, and folder alignment passed every scored routing check."
+        ],
+        "improvements": [
+          "Revalidate the description with fresh positive, negative, and near-neighbor prompts before each release."
+        ],
+        "deductions": []
+      },
+      {
+        "id": "executability",
+        "weight": 16,
+        "score": 16,
+        "status": "excellent",
+        "reasons": [
+          "The activated body exposes an actionable workflow with explicit execution steps."
+        ],
+        "improvements": [
+          "Run one representative task and tighten any workflow step that requires unstated judgment."
+        ],
+        "deductions": []
+      },
+      {
+        "id": "context",
+        "weight": 10,
+        "score": 10,
+        "status": "excellent",
+        "reasons": [
+          "The main SKILL.md stays focused and within the progressive-disclosure context budget."
+        ],
+        "improvements": [
+          "Keep SKILL.md below 500 lines and move new detail into directly linked references."
+        ],
+        "deductions": []
+      },
+      {
+        "id": "resources",
+        "weight": 9,
+        "score": 9,
+        "status": "excellent",
+        "reasons": [
+          "Local resources are organized for progressive loading and every referenced path resolves."
+        ],
+        "improvements": [
+          "Recheck every linked resource and load it only at the workflow step that needs it."
+        ],
+        "deductions": []
+      },
+      {
+        "id": "safety",
+        "weight": 20,
+        "score": 20,
+        "status": "excellent",
+        "reasons": [
+          "No exposed secret, instruction bypass, or unguarded destructive action was detected."
+        ],
+        "improvements": [
+          "Repeat the permission and destructive-action review whenever the Skill gains a new capability."
+        ],
+        "deductions": []
+      },
+      {
+        "id": "portability",
+        "weight": 8,
+        "score": 8,
+        "status": "excellent",
+        "reasons": [
+          "No undeclared user path, concrete model dependency, or machine-specific assumption was detected."
+        ],
+        "improvements": [
+          "Test the package on another supported client or environment before claiming broader compatibility."
+        ],
+        "deductions": []
+      },
+      {
+        "id": "effectiveness",
+        "weight": 12,
+        "score": 12,
+        "status": "excellent",
+        "reasons": [
+          "The package includes the routing and regression artifacts required for its declared maturity."
+        ],
+        "improvements": [
+          "Advance the separate evidence grade with a same-revision target-client trace; use accountable operating review for E4."
+        ],
+        "deductions": []
+      },
+      {
+        "id": "maintainability",
+        "weight": 7,
+        "score": 7,
+        "status": "excellent",
+        "reasons": [
+          "The package contains no unfinished executable instructions or lifecycle mismatch detected by the rubric."
+        ],
+        "improvements": [
+          "Rerun package, routing, and report checks on every tagged release."
+        ],
+        "deductions": []
+      }
+    ],
+    "findings": []
+  },
+  "evidence": {
+    "grade": "E2",
+    "coverage": 60,
+    "claim": "balanced routing regression fixtures",
+    "source": null,
+    "observed_at": null
+  },
+  "iteration": {
+    "number": 1,
+    "score_delta": null,
+    "resolved_findings": [],
+    "new_findings": []
+  },
+  "generated_at": "2026-08-11T23:21:19-04:00"
+}

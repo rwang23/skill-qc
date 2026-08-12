@@ -1,0 +1,42 @@
+{
+  "schema_version": 2,
+  "status": "provisional",
+  "last_reviewed": "2026-08-11",
+  "owner": "rwang23",
+  "confirmed_by": null,
+  "confirmed_at": null,
+  "project_profiles": ["platform-automation", "public-skill-package"],
+  "document_model": "compact governed Skill package with public examples",
+  "number_bands": {
+    "91": {"name": "audit", "path": "91-audit", "optional": true},
+    "92": {"name": "report", "path": "92-report", "optional": true},
+    "93": {"name": "records", "path": "93-records", "optional": true},
+    "94": {"name": "archive", "path": "94-archive", "optional": true}
+  },
+  "lifecycle_roots": {
+    "examples": {
+      "path": "examples",
+      "purpose": "public revision-bound self-audit samples",
+      "retention": "regenerate when product behavior or report output changes"
+    }
+  },
+  "context_model": "no committed private context; disposable runs use ignored .audit-work",
+  "context_surfaces": {},
+  "docs_index": "docs/README.md",
+  "structure_authority": "docs/document-structure-baseline.json",
+  "content_authorities": {
+    "workflow": "SKILL.md",
+    "scoring": "references/rubric.md",
+    "evidence": "references/evidence-schema.md",
+    "report": "references/report-contract.md"
+  },
+  "new_folder_policy": {
+    "allowed": true,
+    "requires": ["purpose", "profile_fit", "role_and_lifecycle", "index_entry", "baseline_update"]
+  },
+  "change_control": {
+    "pre_change_approval_required": false,
+    "post_change_report_required": true,
+    "baseline_confirmation_required": true
+  }
+}
