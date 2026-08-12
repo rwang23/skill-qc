@@ -44,6 +44,7 @@ When an anonymous report must remain reversible for internal follow-up, add `--m
 
 ## Decision rules
 
+- Run from this package alone. Do not require Skill Evolution, Agent Skill Creator, a platform-managed Skill Creator, or private user configuration; treat their artifacts only as optional inputs.
 - Keep the target read-only. Editing, repair, installation, registry changes, publishing, and deployment require separate authorization.
 - In single mode, require a directory whose root contains one `SKILL.md`. In repository mode, require at least one discoverable `SKILL.md` below the target.
 - Treat `BLOCKED` as independent of the numeric score.

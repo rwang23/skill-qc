@@ -67,22 +67,21 @@
       }
     },
     {
-      "id": "near-neighbor-skill-evolution-proposal",
+      "id": "near-neighbor-improvement-proposal",
       "prompt": "Turn repeated Skill usage evidence and user feedback into a reviewable proposal for evals, hooks, or routing regressions; keep it proposal-only until explicitly approved.",
-      "expected_output": "Use skill-evolution for the proposal; SkillQC remains the separate read-only audit owner.",
+      "expected_output": "Use a separate evidence-to-improvement workflow; SkillQC remains the read-only audit owner.",
       "expectations": [
-        "Routes proposal work to skill-evolution.",
+        "Recognizes proposal work as outside SkillQC without requiring a named sibling Skill.",
         "Does not replace evidence-driven evolution with a quality audit or apply the proposal automatically."
       ],
       "pressure": null,
       "routing": {
         "case_type": "near-neighbor",
-        "should_trigger": ["skill-evolution"],
+        "should_trigger": [],
         "should_not_trigger": ["skill-qc"],
         "lexical": {
-          "required_top_k": 3,
           "forbidden_top_k": 1,
-          "owner_outranks_forbidden": true
+          "owner_outranks_forbidden": false
         }
       }
     },

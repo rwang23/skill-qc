@@ -18,6 +18,12 @@ SkillQC 评估的是 Skill 包自身的工程质量：Agent 能不能找到它�
 
 它不评价这个 Skill 所处理业务的专业深度、策略优劣、商业价值或实际结果。一个 Shopify Skill、法律 Skill 或研究 Skill 即使结构和执行设计很好，其中的业务判断仍可能需要单独的专业审查。
 
+## 独立运行
+
+SkillQC 只需要 Python 3.11 或更高版本，并且全部代码只使用 Python 标准库。评分规范、审计器、报告模板、数据结构、路由用例和测试都在本仓库内。它不调用 Skill Evolution、Agent Skill Creator、平台管理的 Skill Creator，也不依赖私有本地配置。
+
+其他工具可以把 SkillQC JSON 当作可选证据读取，但 SkillQC 不依赖它们。审计结果也不构成修改目标 Skill 的授权。
+
 ## 直接交给 Agent 使用
 
 ### 安装到 Codex

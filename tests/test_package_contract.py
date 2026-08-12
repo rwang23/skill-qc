@@ -57,6 +57,21 @@ class PackageContractTests(unittest.TestCase):
         self.assertNotIn("examples/self-audit.en.html", chinese)
         self.assertNotIn("examples/repository-audit.en.html", chinese)
 
+    def test_runtime_contract_does_not_require_a_sibling_skill(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = (root / "SKILL.md").read_text(encoding="utf-8")
+        english = (root / "README.md").read_text(encoding="utf-8")
+        chinese = (root / "README.zh-CN.md").read_text(encoding="utf-8")
+        data = json.loads((root / "evals" / "evals.json").read_text(encoding="utf-8"))
+
+        self.assertIn("Standalone by design", english)
+        self.assertIn("独立运行", chinese)
+        self.assertIn("Do not require Skill Evolution", skill_text)
+        for case in data["evals"]:
+            with self.subTest(case=case.get("id")):
+                required = case.get("routing", {}).get("should_trigger", [])
+                self.assertTrue(all(name == "skill-qc" for name in required))
+
 
 if __name__ == "__main__":
     unittest.main()

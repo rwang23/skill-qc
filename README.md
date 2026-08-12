@@ -18,6 +18,12 @@ SkillQC evaluates the engineering quality of a Skill package: whether an agent c
 
 It does not judge the professional depth, business strategy, commercial value, or real-world outcome of the capability the Skill performs. A Shopify Skill, legal Skill, or research Skill can be well packaged even when its domain advice still needs a separate expert review.
 
+## Standalone by design
+
+SkillQC runs on Python 3.11 or later and the Python standard library. The rubric, auditor, report templates, schemas, route fixtures, and tests all live in this repository. It does not call Skill Evolution, Agent Skill Creator, a platform-managed Skill Creator, or private local configuration.
+
+Other tools may consume SkillQC JSON as optional evidence. SkillQC does not require them, and an audit result does not grant permission to edit the target.
+
 ## Use it through your agent
 
 ### Install for Codex
