@@ -396,7 +396,7 @@ def _audit_skill(
             )
         )
     trigger_pattern = re.compile(
-        r"\b(use when|use for|when (?:the |a |an |users? |asked|working|handling)|whenever|trigger)\b|适用于|当.{0,40}时|用户明确要求.{0,120}时使用|触发",
+        r"\b(use when|use for|use through.{0,120}?\bor when explicitly requested|when (?:the |a |an |users? |asked|working|handling)|whenever|trigger)\b|适用于|当.{0,40}时|用户明确要求.{0,120}时使用|触发",
         re.I | re.S,
     )
     if description and not trigger_pattern.search(description):

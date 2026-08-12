@@ -164,6 +164,31 @@ description: 安全盘点可清理的构建缓存和过期日志。用户明确�
                 {finding["code"] for finding in report["findings"]},
             )
 
+    def test_parent_child_use_through_or_explicit_request_trigger_is_recognized(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            skill_dir = Path(temp_dir) / "dtc-growth-diagnosis"
+            skill_dir.mkdir()
+            (skill_dir / "SKILL.md").write_text(
+                """---
+name: dtc-growth-diagnosis
+description: Diagnose one DTC growth symptom with evidence and safe next checks. Use through the dtc-growth parent or when explicitly requested; not for live platform changes.
+---
+
+1. Build a falsifiable issue tree from the named symptom.
+2. Report evidence gaps and the next read-only checks.
+""",
+                encoding="utf-8",
+            )
+
+            report = audit_target(skill_dir, profile="portable", maturity="production")
+
+            self.assertNotIn(
+                "routing.trigger-missing",
+                {finding["code"] for finding in report["findings"]},
+            )
+
     def test_instruction_bypass_is_blocked_but_prohibited_example_is_not(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
