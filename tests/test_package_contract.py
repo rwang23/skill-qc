@@ -42,6 +42,21 @@ class PackageContractTests(unittest.TestCase):
                 self.assertGreaterEqual(lexical.get("required_top_k", 1), 1)
                 self.assertGreaterEqual(lexical.get("forbidden_top_k", 1), 1)
 
+    def test_each_readme_links_only_to_html_examples_in_its_language(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        english = (root / "README.md").read_text(encoding="utf-8")
+        chinese = (root / "README.zh-CN.md").read_text(encoding="utf-8")
+
+        self.assertIn("examples/self-audit.en.html", english)
+        self.assertIn("examples/repository-audit.en.html", english)
+        self.assertNotIn("examples/self-audit.zh-CN.html", english)
+        self.assertNotIn("examples/repository-audit.zh-CN.html", english)
+
+        self.assertIn("examples/self-audit.zh-CN.html", chinese)
+        self.assertIn("examples/repository-audit.zh-CN.html", chinese)
+        self.assertNotIn("examples/self-audit.en.html", chinese)
+        self.assertNotIn("examples/repository-audit.en.html", chinese)
+
 
 if __name__ == "__main__":
     unittest.main()

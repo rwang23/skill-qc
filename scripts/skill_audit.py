@@ -920,14 +920,97 @@ def _repository_skill_directories(root: Path) -> list[Path]:
     return sorted(set(skill_dirs), key=lambda path: path.as_posix().lower())
 
 
-def audit_repository(
+def _repository_optimization_queue(skills: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    severity_order = {"blocker": 0, "high": 1, "medium": 2, "low": 3}
+    gate_order = {"BLOCKED": 0, "REVIEW": 1, "PASS": 2}
+    evidence_order = {"E1": 0, "E2": 1, "E3": 2, "E4": 3}
+    queue: list[dict[str, Any]] = []
+
+    for skill in skills:
+        if (
+            skill["quality_score"] >= 100
+            and skill["gate_status"] == "PASS"
+            and not skill["findings"]
+        ):
+            continue
+
+        ranked_findings = sorted(
+            skill["findings"],
+            key=lambda item: (
+                severity_order.get(item["severity"], 4),
+                -float(item["points_lost"]),
+                item["code"],
+            ),
+        )
+        affected_dimensions = {
+            finding["dimension"] for finding in ranked_findings
+        }
+        ranked_dimensions = sorted(
+            (
+                dimension
+                for dimension in skill["dimensions"]
+                if dimension["id"] in affected_dimensions
+            ),
+            key=lambda item: (
+                item["score"] / item["weight"] if item["weight"] else 0,
+                item["id"],
+            ),
+        )
+        improvements = list(
+            dict.fromkeys(
+                improvement
+                for dimension in ranked_dimensions
+                for improvement in dimension["improvements"]
+            )
+        )[:3]
+        priority = {
+            "BLOCKED": "critical",
+            "REVIEW": "high",
+            "PASS": "medium",
+        }[skill["gate_status"]]
+        queue.append(
+            {
+                "name": skill["name"],
+                "path": skill["path"],
+                "quality_score": skill["quality_score"],
+                "gate_status": skill["gate_status"],
+                "evidence_grade": skill["evidence"]["grade"],
+                "priority": priority,
+                "finding_count": len(skill["findings"]),
+                "top_findings": [
+                    {
+                        "code": finding["code"],
+                        "dimension": finding["dimension"],
+                        "severity": finding["severity"],
+                        "points_lost": finding["points_lost"],
+                        "message": finding["message"],
+                        "file": finding["file"],
+                        "line": finding["line"],
+                    }
+                    for finding in ranked_findings[:3]
+                ],
+                "improvements": improvements,
+            }
+        )
+
+    return sorted(
+        queue,
+        key=lambda item: (
+            gate_order[item["gate_status"]],
+            item["quality_score"],
+            evidence_order.get(item["evidence_grade"], 4),
+            item["name"].lower(),
+        ),
+    )
+
+
+def _audit_repository_with_mapping(
     target: str | Path,
     *,
     profile: str = "portable",
     maturity: str = "unclassified",
     anonymize: bool = False,
-) -> dict[str, Any]:
-    """Audit every discoverable Skill package below one repository root."""
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     target_path = Path(target).resolve()
     if not target_path.is_dir():
         raise FileNotFoundError(f"Repository target must be a directory: {target_path}")
@@ -940,11 +1023,24 @@ def audit_repository(
     skills = [
         _audit_skill(skill_dir, profile, maturity, None) for skill_dir in skill_dirs
     ]
+    mapping_entries: list[dict[str, Any]] = []
     if anonymize:
         for index, skill in enumerate(skills, start=1):
             label = f"Skill {index:03d}"
             private_path = str(skill["path"])
             public_path = f"<REPOSITORY>/skill-{index:03d}"
+            mapping_entries.append(
+                {
+                    "anonymous_name": label,
+                    "skill_name": skill["name"],
+                    "path": private_path,
+                    "relative_path": Path(private_path).relative_to(target_path).as_posix(),
+                    "revision": skill["revision"],
+                    "quality_score": skill["quality_score"],
+                    "gate_status": skill["gate_status"],
+                    "evidence_grade": skill["evidence"]["grade"],
+                }
+            )
             skill = _redact_report_paths(skill, [(private_path, public_path)])
             skill["name"] = label
             skill["path"] = public_path
@@ -1012,11 +1108,12 @@ def audit_repository(
         sum(skill["quality_score"] for skill in skills) / len(skills), 1
     )
     skill_scores = [skill["quality_score"] for skill in skills]
+    optimization_queue = _repository_optimization_queue(skills)
     finding_frequencies = sorted(
         finding_frequency_map.values(),
         key=lambda item: (-item["skill_count"], item["code"]),
     )
-    return {
+    report = {
         "schema_version": 2,
         "rubric_version": RUBRIC_VERSION,
         "mode": "repository",
@@ -1035,11 +1132,31 @@ def audit_repository(
                 "maximum": max(skill_scores),
             },
             "finding_count": sum(len(skill["findings"]) for skill in skills),
+            "optimization_candidate_count": len(optimization_queue),
         },
         "dimensions": dimensions,
         "finding_frequencies": finding_frequencies,
+        "optimization_queue": optimization_queue,
         "skills": skills,
     }
+    return report, mapping_entries
+
+
+def audit_repository(
+    target: str | Path,
+    *,
+    profile: str = "portable",
+    maturity: str = "unclassified",
+    anonymize: bool = False,
+) -> dict[str, Any]:
+    """Audit every discoverable Skill package below one repository root."""
+    report, _ = _audit_repository_with_mapping(
+        target,
+        profile=profile,
+        maturity=maturity,
+        anonymize=anonymize,
+    )
+    return report
 
 
 def render_report(
@@ -1172,6 +1289,10 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Replace Skill names and package paths with stable report-local labels.",
     )
+    repository.add_argument(
+        "--mapping-out",
+        help="Write a separate private JSON map from anonymous labels to real Skill names and paths; requires --anonymize.",
+    )
     repository.add_argument("--json-out", required=True)
     repository.add_argument("--html-out", required=True)
     repository.add_argument("--title")
@@ -1210,7 +1331,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         mappings = _parse_redactions(args.redact_root)
         if args.command == "audit-repository":
-            report = audit_repository(
+            if args.mapping_out and not args.anonymize:
+                raise ValueError("--mapping-out requires --anonymize")
+            report, mapping_entries = _audit_repository_with_mapping(
                 args.target,
                 profile=args.profile,
                 maturity=args.maturity,
@@ -1243,6 +1366,24 @@ def main(argv: list[str] | None = None) -> int:
             newline="\n",
         )
         render_report(saved_report, args.html_out, title=args.title, locale=args.locale)
+        if args.command == "audit-repository" and args.mapping_out:
+            mapping_path = Path(args.mapping_out)
+            mapping_path.parent.mkdir(parents=True, exist_ok=True)
+            mapping_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "rubric_version": RUBRIC_VERSION,
+                        "generated_at": args.observed_at or "not-recorded",
+                        "target": str(Path(args.target).resolve()),
+                        "entries": mapping_entries,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+                newline="\n",
+            )
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"audit-error={type(exc).__name__}: {exc}", file=sys.stderr)
         return 3
@@ -1261,6 +1402,8 @@ def main(argv: list[str] | None = None) -> int:
         )
     print(f"json={Path(args.json_out).resolve()}")
     print(f"html={Path(args.html_out).resolve()}")
+    if saved_report["mode"] == "repository" and args.mapping_out:
+        print(f"mapping={Path(args.mapping_out).resolve()}")
     if args.stdout_json:
         print(json.dumps(saved_report, ensure_ascii=False, indent=2))
     return {"PASS": 0, "REVIEW": 1, "BLOCKED": 2}[summary["gate_status"]]

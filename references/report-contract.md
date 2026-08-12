@@ -32,11 +32,15 @@ Repository mode audits every discoverable Skill independently and includes:
 - `PASS`, `REVIEW`, and `BLOCKED` distribution;
 - E1, E2, E3, and E4 distribution;
 - a per-Skill ledger with score, gate, and evidence grade;
+- a deterministic per-Skill optimization queue ordered by gate severity, score, evidence grade, and name;
+- for each queued Skill, its priority, top findings, evidence locations, and up to three concrete improvements;
 - recurring finding codes ordered by affected-Skill count.
 
 The repository gate is `BLOCKED` when any included Skill is blocked. Otherwise it is `REVIEW` when any included Skill requires review, and `PASS` only when all included Skills pass. The average never replaces this gate.
 
-With `--anonymize`, the report replaces Skill names and package paths with stable labels such as `Skill 001`. Scores, gates, evidence, and finding classes remain unchanged.
+With `--anonymize`, the report replaces Skill names and package paths with stable labels such as `Skill 001`. Scores, gates, evidence, optimization priority, and finding classes remain unchanged.
+
+`--mapping-out PATH` is available only with `--anonymize`. It writes a separate private JSON file that connects every report-local label to the real Skill name, absolute path, relative path, revision, score, gate, and evidence grade. The public JSON and HTML never embed this mapping.
 
 ## Shared presentation rules
 
@@ -48,5 +52,6 @@ Every report states the evaluation boundary: SkillQC measures the engineering qu
 
 - The CLI replaces the absolute single target with `<SKILL:name>` and the repository root with `<REPOSITORY>` before saving JSON or HTML.
 - Additional private prefixes require `--redact-root SOURCE=LABEL`.
+- Mapping files contain local inventory and must not be committed, published, attached to public issues, or included in shareable screenshots.
 - Matched secret values never enter report data.
 - Embedded JSON escapes HTML-significant characters before insertion into a template.

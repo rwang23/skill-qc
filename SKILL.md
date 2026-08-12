@@ -11,7 +11,7 @@ description: Audit one Agent Skill or a Skill repository read-only and generate 
 4. Review context-sensitive findings with [the review protocol](references/review-protocol.md); change a rule only when a focused regression fixture proves it wrong.
 5. In single mode, credit E3 or E4 only when [the evidence contract](references/evidence-schema.md) matches the current `SKILL.md` revision. Repository mode summarizes the evidence available inside each package.
 6. For an authorized improvement cycle, preserve the prior JSON as `--baseline`, rerun after each bounded change, and stop after three rounds unless asked to continue.
-7. Report score, safety gate, evidence grade, profile, and maturity separately. For a repository, report the average plus per-Skill results and distributions.
+7. Report score, safety gate, evidence grade, profile, and maturity separately. For a repository, report the average, distributions, and the prioritized reason and recommended actions for each Skill worth improving.
 8. State the scope boundary: SkillQC evaluates Skill-package engineering quality, not the business expertise, strategy, or real-world result of the capability.
 
 ## Run a single-Skill audit
@@ -40,12 +40,16 @@ python scripts/skill_audit.py audit-repository <REPOSITORY_DIR> `
 
 Add `--anonymize` before sharing a report. It replaces Skill names and package paths with stable report-local labels. Repository mode ignores common generated, vendor, fixture, test, and worktree directories.
 
+When an anonymous report must remain reversible for internal follow-up, add `--mapping-out repository.private-map.json`. The mapping contains real names, paths, and revisions. Keep it outside public artifacts and never publish it with the anonymized report.
+
 ## Decision rules
 
 - Keep the target read-only. Editing, repair, installation, registry changes, publishing, and deployment require separate authorization.
 - In single mode, require a directory whose root contains one `SKILL.md`. In repository mode, require at least one discoverable `SKILL.md` below the target.
 - Treat `BLOCKED` as independent of the numeric score.
 - Treat the repository score as an unweighted average of individual Skill scores. Never use it to hide the gate or evidence distribution.
+- Keep information-only evidence gaps in the repository optimization queue even when a Skill remains `100 / PASS`.
+- Treat an anonymization mapping as private inventory. Generate it only when requested and keep it separate from shareable JSON, HTML, screenshots, and commits.
 - Treat heuristic findings as review prompts when negation, examples, local profiles, or security demonstrations may create false positives.
 - Do not credit synthetic fixtures or lexical matching above E2.
 - Report only a secret pattern class and location, never the matched value.

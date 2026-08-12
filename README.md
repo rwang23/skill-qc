@@ -52,21 +52,23 @@ Ask your agent:
 
 > Use $skill-qc in repository mode to audit every discoverable Agent Skill under `/path/to/repository`. Generate an anonymized English HTML report with the average score, dimension averages, gate and evidence distributions, per-Skill results, and recurring findings.
 
-The agent selects the correct deterministic command, keeps the targets read-only, and returns the generated JSON and HTML files.
+For an internal report that names each Skill and explains what to improve first, ask:
+
+> Use $skill-qc to audit `/path/to/repository` read-only. Keep the real Skill names in a private English HTML report and show the prioritized reason and recommended actions for every Skill worth improving.
+
+The agent selects the deterministic command, keeps the targets read-only, and returns the generated JSON and HTML files. An anonymized run can also create a separate private mapping file when you need to connect report labels back to the local Skills.
 
 ## Two report modes
 
 | Mode | Target | Headline | Detail preserved |
 |---|---|---|---|
 | Single Skill | One directory with `SKILL.md` at its root | One 100-point score | Eight reasoned dimensions, findings, improvements, gate, evidence, and iteration delta |
-| Repository | A root containing one or more discoverable Skills | Unweighted average score | Dimension averages, score range, gate and evidence distributions, recurring findings, and per-Skill ledger |
+| Repository | A root containing one or more discoverable Skills | Unweighted average score | Dimension averages, score range, gate and evidence distributions, a prioritized per-Skill optimization queue, recurring findings, and a complete ledger |
 
 Open the live HTML examples:
 
 - [English single-Skill report](examples/self-audit.en.html)
-- [中文单 Skill 报告](examples/self-audit.zh-CN.html)
 - [English anonymized repository report](examples/repository-audit.en.html)
-- [中文匿名仓库报告](examples/repository-audit.zh-CN.html)
 
 ### Single-Skill dimensions 01 to 08
 
@@ -123,7 +125,7 @@ Repository:
 python scripts/skill_audit.py audit-repository /path/to/repository --profile portable --maturity library --anonymize --locale en --json-out repository.json --html-out repository.html
 ```
 
-Use `--baseline previous.json` for a single-Skill iteration comparison, `--evidence evidence.json` for revision-bound E3/E4 evidence, and `--redact-root SOURCE=LABEL` for additional private path prefixes.
+Use `--baseline previous.json` for a single-Skill iteration comparison, `--evidence evidence.json` for revision-bound E3/E4 evidence, and `--redact-root SOURCE=LABEL` for additional private path prefixes. An anonymized repository run can add `--mapping-out repository.private-map.json` to keep a separate reversible label map on the local machine.
 
 Exit codes are `0` for `PASS`, `1` for `REVIEW`, `2` for `BLOCKED`, and `3` for invalid input or execution error.
 
@@ -131,6 +133,7 @@ Exit codes are `0` for `PASS`, `1` for `REVIEW`, `2` for `BLOCKED`, and `3` for 
 
 - The CLI replaces the single target root with `<SKILL:name>` and a repository root with `<REPOSITORY>` before saving reports.
 - `--anonymize` also replaces Skill names, package paths, and revision fingerprints with report-local placeholders.
+- `--mapping-out` is opt-in and requires `--anonymize`. Its JSON contains real Skill names, paths, and revisions; keep it private and never publish it with the anonymized report.
 - Secret-shaped values never enter the report. Only the pattern class, file, and line are recorded.
 - Repository discovery ignores common generated, vendor, fixture, test, and worktree directories.
 - Static rules can produce false positives or false negatives. Context-sensitive findings still need human adjudication.

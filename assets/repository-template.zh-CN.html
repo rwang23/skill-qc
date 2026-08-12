@@ -57,6 +57,23 @@
     .evidence-chip { padding:14px 12px; text-align:center; background:#e8e8df; }
     .evidence-chip strong { display:block; font:500 27px/1 "Palatino Linotype",Georgia,serif; }
     .evidence-chip span { color:#4d554d; font-size:11px; }
+    .action-list { border-top:1px solid var(--ink); }
+    .action-card { display:grid; grid-template-columns:78px minmax(0,1fr); gap:22px; padding:26px 8px 30px; border-bottom:1px solid var(--line); }
+    .action-rank { color:var(--orange); font:500 36px/1 "Palatino Linotype",Georgia,serif; }
+    .action-head { display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; }
+    .action-name { margin:0; font:500 30px/1.15 "FangSong","STFangsong",serif; letter-spacing:-.025em; word-break:break-word; }
+    .action-priority { padding:5px 8px; color:var(--ink); background:var(--acid); font-size:10px; font-weight:900; letter-spacing:.09em; }
+    .action-priority.critical { color:white; background:var(--red); }
+    .action-priority.high { background:#f0c45f; }
+    .action-path { margin-top:8px; color:var(--muted); font:11px/1.45 "Cascadia Mono",Consolas,monospace; overflow-wrap:anywhere; }
+    .action-meta { display:flex; flex-wrap:wrap; gap:9px 18px; margin-top:12px; color:var(--muted); font-size:11px; }
+    .action-body { display:grid; grid-template-columns:1.1fr .9fr; gap:18px; margin-top:22px; }
+    .action-panel { padding:18px 20px; background:rgba(248,246,239,.78); border:1px solid var(--line); }
+    .action-panel h3 { margin-bottom:12px; color:var(--green); font:900 10px/1.2 "Microsoft YaHei",sans-serif; letter-spacing:.13em; }
+    .action-panel ol,.action-panel ul { margin:0; padding-left:20px; }
+    .action-panel li+li { margin-top:10px; }
+    .finding-code { display:block; color:var(--ink); font:11px/1.45 "Cascadia Mono",Consolas,monospace; overflow-wrap:anywhere; }
+    .finding-copy { display:block; margin-top:3px; color:var(--muted); font-size:12px; }
     .ledger { border-top:1px solid var(--ink); }
     .ledger-row { display:grid; grid-template-columns:68px minmax(190px,1fr) 90px 105px 105px; gap:16px; align-items:center; min-height:74px; padding:12px 8px; border-bottom:1px solid var(--line); }
     .ledger-row.header { min-height:45px; color:var(--muted); font-size:10px; font-weight:900; letter-spacing:.13em; text-transform:uppercase; }
@@ -78,9 +95,9 @@
     .method-card p { margin-bottom:0; color:var(--muted); font-size:13px; }
     footer { padding:25px 0 44px; border-top:1px solid rgba(21,25,20,.25); color:var(--muted); font-size:11px; }
     .footer-row { display:flex; justify-content:space-between; gap:20px; }
-    @media (max-width:900px) { .hero{grid-template-columns:1fr}.score-block{max-width:470px}.signal-grid{grid-template-columns:repeat(2,1fr)}.section-head{grid-template-columns:90px 1fr}.section-intro{grid-column:2}.dimension-grid{grid-template-columns:repeat(2,1fr)}.distribution,.method-grid{grid-template-columns:1fr}.priority-grid{grid-template-columns:repeat(2,1fr)} }
-    @media (max-width:620px) { .shell{width:min(100% - 24px,1240px)}.mast-meta{display:none}.hero{padding-top:48px}h1{font-size:52px}.signal-grid,.dimension-grid,.priority-grid{grid-template-columns:1fr}.section-head{grid-template-columns:1fr}.section-intro{grid-column:1}.ledger-row{grid-template-columns:44px 1fr 64px}.ledger-row>:nth-child(4),.ledger-row>:nth-child(5){grid-column:2}.ledger-row.header{display:none}.footer-row{display:block} }
-    @media print { body{background:white}.shell{width:100%;max-width:none}.score-block,.distribution-panel,.priority-card,.method-card{break-inside:avoid;box-shadow:none}section{padding-bottom:48px} }
+    @media (max-width:900px) { .hero{grid-template-columns:1fr}.score-block{max-width:470px}.signal-grid{grid-template-columns:repeat(2,1fr)}.section-head{grid-template-columns:90px 1fr}.section-intro{grid-column:2}.dimension-grid{grid-template-columns:repeat(2,1fr)}.distribution,.method-grid,.action-body{grid-template-columns:1fr}.priority-grid{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width:620px) { .shell{width:min(100% - 24px,1240px)}.mast-meta{display:none}.hero{padding-top:48px}h1{font-size:52px}.signal-grid,.dimension-grid,.priority-grid{grid-template-columns:1fr}.section-head{grid-template-columns:1fr}.section-intro{grid-column:1}.action-card{grid-template-columns:1fr;gap:12px}.ledger-row{grid-template-columns:44px 1fr 64px}.ledger-row>:nth-child(4),.ledger-row>:nth-child(5){grid-column:2}.ledger-row.header{display:none}.footer-row{display:block} }
+    @media print { body{background:white}.shell{width:100%;max-width:none}.score-block,.distribution-panel,.action-card,.priority-card,.method-card{break-inside:avoid;box-shadow:none}section{padding-bottom:48px} }
   </style>
 </head>
 <body>
@@ -90,6 +107,8 @@
     const summary = report.summary;
     const dimensions = report.dimensions;
     const skills = [...report.skills].sort((a,b) => b.quality_score - a.quality_score || a.name.localeCompare(b.name));
+    const optimizationQueue = report.optimization_queue || [];
+    const optimizationCandidateCount = summary.optimization_candidate_count ?? optimizationQueue.length;
     const generatedAt = "__GENERATED_AT__";
     const labels = {routing:"路由能力",executability:"可执行性",context:"上下文效率",resources:"资源组织",safety:"安全性",portability:"可移植性",effectiveness:"有效性准备度",maintainability:"可维护性"};
     const escapeHtml = (value) => String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
@@ -100,20 +119,60 @@
     const priorities = [...findingCounts.entries()].sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0,6);
     const gateClass = (gate) => String(gate).toLowerCase();
     const gateText = (gate) => ({PASS:"通过",REVIEW:"复核",BLOCKED:"阻断"}[gate] || gate);
+    const priorityText = (priority) => ({critical:"立即处理",high:"优先处理",medium:"建议改进"}[priority] || priority);
+    const findingTranslations = {
+      "routing.frontmatter-invalid":["SKILL.md 缺少有效的 YAML frontmatter。","在 SKILL.md 开头补充有效的 YAML frontmatter。"],
+      "routing.name-missing":["frontmatter 没有声明 Skill 名称。","在 frontmatter 中声明小写、连字符格式的名称。"],
+      "routing.name-invalid":["Skill 名称不符合可移植命名规则。","名称只使用小写字母、数字和单个连字符。"],
+      "routing.name-folder-mismatch":["frontmatter 名称与文件夹名称不一致。","让 frontmatter 名称与所在文件夹名称完全一致。"],
+      "routing.description-missing":["缺少用于发现和路由的 description。","写明 Skill 能做什么，以及在什么条件下调用。"],
+      "routing.description-over-spec-limit":["description 超过规范长度。","把 description 压缩到 1024 字符以内，细节移入正文。"],
+      "routing.description-too-thin":["description 信息不足，无法稳定表达能力与触发条件。","补充具体能力、用户请求和调用条件。"],
+      "routing.trigger-missing":["description 没有清楚说明什么时候调用。","增加明确的使用条件，并说明一个容易混淆但不应调用的相邻场景。"],
+      "routing.description-over-250":["description 中包含过多非路由细节。","把能力和触发条件放在最前面，删除不影响路由的细节。"],
+      "executability.workflow-missing":["正文没有形成可执行工作流。","用简短的命令式步骤替换背景说明，并明确输出。"],
+      "executability.package-maintenance-in-body":["激活后正文混入安装、发布或变更记录。","把安装、许可证、变更记录和发布信息移出运行指令。"],
+      "context.body-over-500-lines":["主 SKILL.md 超出渐进披露的上下文预算。","保留主流程，把详细示例和参考资料拆到直接链接的资源。"],
+      "context.name-as-heading":["正文重复了 Skill 名称标题。","删除重复标题，直接进入工作流或决策边界。"],
+      "resources.inline-examples-excessive":["正文内联了过多重复示例或代码。","把重复示例和代码移到按需加载的资源文件。"],
+      "resources.monolithic-body":["可复用代码、参考资料或资产仍集中在主正文。","把资源拆入 scripts、references 或 assets，并在需要的步骤加载。"],
+      "resources.reference-missing":["正文引用的本地资源不存在。","恢复目标文件，或改成可以解析的包内相对路径。"],
+      "maintainability.unfinished-marker":["可执行指令中仍有未完成标记。","发布前完成或移除 TODO、占位符等未完成内容。"],
+      "portability.user-path":["Skill 硬编码了用户或机器专属路径。","改用相对路径、参数或明确声明的配置输入。"],
+      "portability.user-path-local-profile":["本地专用路径需要更清楚的适用边界。","明确本地使用契约，并从可移植发布中排除该路径。"],
+      "portability.hardcoded-model":["Skill 硬编码了具体模型。","按能力路由，或把模型作为可配置参数。"],
+      "verification.eval-suite-missing":["当前成熟度要求路由测试，但包内缺失。","补充正向、负向、近邻、保留集和压力测试。"],
+      "verification.eval-suite-absent":["没有用于区分近邻 Skill 的聚焦路由测试。","增加覆盖容易混淆场景的路由测试集。"],
+      "verification.routing-case-coverage":["路由测试缺少必需的用例类型。","补齐缺失用例，并记录预期选择边界。"],
+      "verification.pressure-case-missing":["路由测试缺少压力或对抗场景。","增加一个必须保持安全与证据边界的压力用例。"],
+      "verification.eval-suite-invalid":["evals/evals.json 无法读取或结构无效。","修复路由测试文件并验证用例结构。"],
+      "effectiveness.evidence-invalid":["外部 E3/E4 证据记录不完整。","提供与当前版本绑定的完整 E3 或 E4 证据。"],
+      "effectiveness.evidence-revision-mismatch":["行为证据对应的是其他 Skill 版本。","针对当前 SKILL.md 版本重新运行行为检查。"],
+      "safety.secret-pattern":["检测到疑似硬编码凭据。","移除并轮换凭据，改用安全的运行时配置来源。"],
+      "safety.destructive-unguarded":["破坏性操作缺少足够的保护条件。","要求精确范围、明确确认、备份或试运行，并提供回滚方案。"],
+      "safety.instruction-bypass":["指令试图绕过更高优先级的政策或审批。","删除绕过指令，保留更高优先级政策和审批边界。"]
+    };
+    const findingTranslation = (code) => findingTranslations[code] || [`检测到规则 ${code}。`,`结合上下文复核 ${code}，并修复确认的问题。`];
 
     const dimensionCards = dimensions.map((item) => `<article class="dimension-card"><div class="dimension-name">${escapeHtml(labels[item.id] || item.id)}</div><div class="dimension-score">${item.average_score}<small> / ${item.weight} 平均</small></div><div class="bar" role="progressbar" aria-label="${escapeHtml(labels[item.id] || item.id)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${item.average_percent}"><span style="--percent:${item.average_percent}%"></span></div><div class="dimension-foot">${item.skill_count} 个 Skill 中有 ${item.full_score_count} 个获得满分</div></article>`).join("");
     const ledgerRows = skills.map((skill,index) => `<article class="ledger-row"><div class="rank">${String(index+1).padStart(2,"0")}</div><div class="skill-name">${escapeHtml(skill.name)}</div><div class="skill-score">${skill.quality_score}</div><div><span class="gate ${gateClass(skill.gate_status)}">${escapeHtml(gateText(skill.gate_status))}</span></div><div class="evidence">${escapeHtml(skill.evidence.grade)} 证据</div></article>`).join("");
     const priorityCards = priorities.length ? priorities.map(([code,count]) => `<article class="priority-card"><div class="priority-count">${count}</div><div class="priority-code">${escapeHtml(code)}</div><p class="priority-note">${summary.skill_count} 个 Skill 中有 ${count} 个触发此项。</p></article>`).join("") : `<div class="empty">本次审计没有发现重复出现的计分问题。</div>`;
+    const actionCards = optimizationQueue.length ? optimizationQueue.map((item,index) => {
+      const findingRows = item.top_findings.map((finding) => `<li><span class="finding-code">${escapeHtml(finding.code)}</span><span class="finding-copy">${escapeHtml(findingTranslation(finding.code)[0])}</span></li>`).join("");
+      const actionRows = [...new Set(item.top_findings.map((finding) => findingTranslation(finding.code)[1]))].map((action) => `<li>${escapeHtml(action)}</li>`).join("");
+      return `<article class="action-card"><div class="action-rank">${String(index+1).padStart(2,"0")}</div><div><div class="action-head"><h3 class="action-name">${escapeHtml(item.name)}</h3><span class="action-priority ${escapeHtml(item.priority)}">${escapeHtml(priorityText(item.priority))}</span></div><div class="action-path">${escapeHtml(item.path)}</div><div class="action-meta"><span>${item.quality_score}/100</span><span>${escapeHtml(gateText(item.gate_status))}</span><span>${escapeHtml(item.evidence_grade)} 证据</span><span>${item.finding_count} 个问题</span></div><div class="action-body"><div class="action-panel"><h3>优先原因</h3><ul>${findingRows}</ul></div><div class="action-panel"><h3>建议动作</h3><ol>${actionRows}</ol></div></div></div></article>`;
+    }).join("") : `<div class="empty">本次审计的所有 Skill 都达到 100 分且安全门为通过，无需生成优化队列。</div>`;
 
     document.getElementById("app").innerHTML = `<div class="shell">
-      <header class="masthead"><div class="brand"><span class="brand-mark">QC</span>SkillQC</div><div class="mast-meta">仓库审计 · 评分规则 ${escapeHtml(report.rubric_version)}</div></header>
+      <header class="masthead"><div class="brand"><span class="brand-mark">QC</span>SkillQC</div><div class="mast-meta">仓库审计 · ${escapeHtml(report.profile || "未记录")} · ${escapeHtml(report.maturity || "未记录")} · 评分规则 ${escapeHtml(report.rubric_version)}</div></header>
       <section class="hero"><div><div class="eyebrow">Skill 仓库质量报告</div><h1>把整个仓库读成一组证据。</h1><p class="hero-copy">SkillQC 使用同一套规则审计了 ${summary.skill_count} 个可发现的 Agent Skill。平均分反映 Skill 包自身的工程质量，不评价这些 Skill 所处理业务的专业深度或实际成效。</p></div><div class="score-block"><div class="score-label">Skill 平均分</div><div class="score-value">${summary.average_quality_score}<small> / 100</small></div><p class="score-note">这是各 Skill 总分的等权平均值。安全门单独呈现，不能被平均分抵消。</p></div></section>
       <div class="signal-grid"><article class="signal"><div class="signal-kicker">发现的 Skill</div><div class="signal-value">${summary.skill_count}</div><p class="signal-note">每个可发现 Skill 单独计分。</p></article><article class="signal"><div class="signal-kicker">通过</div><div class="signal-value">${summary.gate_counts.PASS}</div><p class="signal-note">未检测到阻断项或高风险项。</p></article><article class="signal"><div class="signal-kicker">需要复核</div><div class="signal-value">${summary.gate_counts.REVIEW}</div><p class="signal-note">需要人工结合上下文判断。</p></article><article class="signal"><div class="signal-kicker">已阻断</div><div class="signal-value">${summary.gate_counts.BLOCKED}</div><p class="signal-note">检测到不能用均分抵消的风险。</p></article></div>
       <section><div class="section-head"><div class="section-index">01</div><h2>八个维度，分别计算平均分。</h2><p class="section-intro">每条进度表示该维度的平均得分。满分数量可以看出高分是普遍现象，还是由少数 Skill 拉高。</p></div><div class="dimension-grid">${dimensionCards}</div></section>
       <section><div class="section-head"><div class="section-index">02</div><h2>风险与证据不能藏在均分里。</h2><p class="section-intro">仓库平均分再高，也不能抹掉被阻断的 Skill。证据等级同样独立于包质量。</p></div><div class="distribution"><article class="distribution-panel"><div class="panel-title">安全门分布</div><div class="stack" role="img" aria-label="安全门分布"><span class="pass" style="width:${percentage(summary.gate_counts.PASS)}%"></span><span class="review" style="width:${percentage(summary.gate_counts.REVIEW)}%"></span><span class="blocked" style="width:${percentage(summary.gate_counts.BLOCKED)}%"></span></div><div class="legend"><span><strong>${summary.gate_counts.PASS}</strong> 通过</span><span><strong>${summary.gate_counts.REVIEW}</strong> 复核</span><span><strong>${summary.gate_counts.BLOCKED}</strong> 阻断</span></div></article><article class="distribution-panel"><div class="panel-title">证据等级分布</div><div class="evidence-list">${Object.entries(evidenceCounts).map(([grade,count]) => `<div class="evidence-chip"><strong>${count}</strong><span>${grade}</span></div>`).join("")}</div><div class="legend"><span>E1 静态</span><span>E2 测试集</span><span>E3 客户端记录</span><span>E4 实际运行记录</span></div></article></div></section>
-      <section><div class="section-head"><div class="section-index">03</div><h2>逐个 Skill 保留结论。</h2><p class="section-intro">平均分只是摘要。这里保留每个 Skill 的总分、安全门和证据等级。</p></div><div class="ledger"><div class="ledger-row header"><div>序号</div><div>Skill</div><div>分数</div><div>安全门</div><div>证据</div></div>${ledgerRows}</div></section>
-      <section><div class="section-head"><div class="section-index">04</div><h2>优先处理重复出现的问题。</h2><p class="section-intro">出现频率可以帮助安排仓库级改进顺序，但不代表启发式检测结果一定正确。</p></div><div class="priority-grid">${priorityCards}</div></section>
-      <section><div class="section-head"><div class="section-index">05</div><h2>这份报告应该怎样阅读。</h2><p class="section-intro">仓库报告汇总了与单 Skill 报告相同的只读检查。它不会执行目标代码，也不衡量业务结果。</p></div><div class="method-grid"><article class="method-card"><strong>平均分不是认证</strong><p>${summary.average_quality_score}/100 是 ${summary.skill_count} 个 Skill 在评分规则 ${escapeHtml(report.rubric_version)} 下的算术平均分。</p></article><article class="method-card"><strong>安全门不是普通扣分</strong><p>仓库状态为${escapeHtml(gateText(summary.gate_status))}，因为需要复核或被阻断的 Skill 必须在均分之外单独可见。</p></article><article class="method-card"><strong>评判 Skill，不评判业务深度</strong><p>SkillQC 只评估路由、执行设计、上下文、资源、安全、可移植性、验证准备度和可维护性。</p></article></div></section>
+      <section><div class="section-head"><div class="section-index">03</div><h2>先处理哪些 Skill。</h2><p class="section-intro">共有 ${optimizationCandidateCount} 个 Skill 存在计分问题、安全门未通过或证据准备度缺口。队列先按安全门，再按分数和证据等级排序。</p></div><div class="action-list">${actionCards}</div></section>
+      <section><div class="section-head"><div class="section-index">04</div><h2>逐个 Skill 保留结论。</h2><p class="section-intro">平均分只是摘要。这里保留每个 Skill 的总分、安全门和证据等级。</p></div><div class="ledger"><div class="ledger-row header"><div>序号</div><div>Skill</div><div>分数</div><div>安全门</div><div>证据</div></div>${ledgerRows}</div></section>
+      <section><div class="section-head"><div class="section-index">05</div><h2>优先处理重复出现的问题。</h2><p class="section-intro">出现频率可以帮助安排仓库级改进顺序，但不代表启发式检测结果一定正确。</p></div><div class="priority-grid">${priorityCards}</div></section>
+      <section><div class="section-head"><div class="section-index">06</div><h2>这份报告应该怎样阅读。</h2><p class="section-intro">仓库报告汇总了与单 Skill 报告相同的只读检查。它不会执行目标代码，也不衡量业务结果。</p></div><div class="method-grid"><article class="method-card"><strong>平均分不是认证</strong><p>${summary.average_quality_score}/100 是 ${summary.skill_count} 个 Skill 在评分规则 ${escapeHtml(report.rubric_version)} 下的算术平均分。</p></article><article class="method-card"><strong>安全门不是普通扣分</strong><p>仓库状态为${escapeHtml(gateText(summary.gate_status))}，因为需要复核或被阻断的 Skill 必须在均分之外单独可见。</p></article><article class="method-card"><strong>评判 Skill，不评判业务深度</strong><p>SkillQC 只评估路由、执行设计、上下文、资源、安全、可移植性、验证准备度和可维护性。</p></article></div></section>
       <footer><div class="footer-row"><span>由 SkillQC 生成 · ${escapeHtml(generatedAt)}</span><span>${summary.skill_count} 个 Skill · 只读仓库审计</span></div></footer>
     </div>`;
   </script>

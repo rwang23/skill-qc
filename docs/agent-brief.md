@@ -5,7 +5,7 @@
 - Last reviewed: 2026-08-12
 - Project root: `<PROJECT_ROOT>`
 - Project: `skill-qc`
-- Purpose: read-only evaluation of one Agent Skill or every discoverable Skill in a repository, with explainable JSON and bilingual HTML output.
+- Purpose: read-only evaluation of one Agent Skill or every discoverable Skill in a repository, with explainable JSON, bilingual HTML output, and a prioritized per-Skill optimization queue.
 - Stack: Python standard library, HTML/CSS/JavaScript, and `unittest`.
 - Canonical package manager: none; Python standard library only.
 - Production/live-data sensitivity: no live-data access; input packages and generated reports may contain private paths or security-sensitive text and must be redacted before sharing.
@@ -54,7 +54,7 @@ The audit command exits `1` for `REVIEW` or `2` for `BLOCKED`; inspect the saved
 - Rendering tests: `tests/test_report_rendering.py`
 - Route fixtures: `evals/evals.json`
 - Runtime mirror sync: `tools/Sync-ActiveSkill.ps1`
-- Public self-audit examples: `examples/self-audit.*`
+- Public self-audit and anonymized repository examples: `examples/`
 
 ## Change boundaries
 
@@ -63,4 +63,5 @@ The audit command exits `1` for `REVIEW` or `2` for `BLOCKED`; inspect the saved
 - Keep all four HTML reports self-contained, responsive, printable, and semantically equivalent within each mode.
 - Keep single-Skill and repository modes behaviorally separate while using the same scoring authority.
 - Keep public history free of private audit targets, absolute user paths, credentials, and local system inventory.
+- Keep opt-in anonymization mappings in ignored local work areas; never sync or publish them.
 - Installing, publishing, pushing, or acting on live state requires its own authority and same-target readback.

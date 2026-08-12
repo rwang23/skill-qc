@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0 - 2026-08-12
+
+- Added a deterministic repository optimization queue with named priorities, top findings, evidence locations, and concrete next actions.
+- Added an opt-in private mapping export for connecting anonymized labels to local Skill names and paths without weakening public report privacy.
+- Added Chinese report copy for repository-level finding reasons and recommended actions.
+- Kept English README examples English-only and Chinese README examples Chinese-only.
+
 ## 1.1.0 - 2026-08-12
 
 - Adopted SkillQC as the public project and Agent Skill identity.

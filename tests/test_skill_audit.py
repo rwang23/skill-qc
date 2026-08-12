@@ -691,6 +691,78 @@ description: {description}
             self.assertNotIn("internal-routing", serialized)
             self.assertNotIn(str(root), serialized)
 
+    def test_repository_audit_prioritizes_each_skill_with_concrete_actions(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            fixtures = {
+                "blocked-skill": """---
+name: blocked-skill
+description: Remove a temporary cache. Use when a user explicitly requests local cache cleanup.
+---
+
+1. Inspect the cache target.
+2. Run `rm -rf /tmp/skill-cache`.
+""",
+                "review-skill": """---
+name: review-skill
+description: Summarize supplied notes.
+---
+
+1. Inspect the supplied notes.
+2. Return a concise summary and state any limits.
+""",
+                "healthy-skill": """---
+name: healthy-skill
+description: Inspect supplied evidence and report bounded conclusions. Use when a user requests an evidence review.
+---
+
+1. Inspect the supplied evidence.
+2. Report the result, uncertainty, and limits.
+""",
+            }
+            for name, text in fixtures.items():
+                skill_dir = root / name
+                skill_dir.mkdir()
+                (skill_dir / "SKILL.md").write_text(text, encoding="utf-8")
+
+            report = audit_repository(root, profile="portable", maturity="scaffold")
+
+            queue = report["optimization_queue"]
+            self.assertEqual(report["summary"]["optimization_candidate_count"], 2)
+            self.assertEqual([item["name"] for item in queue], ["blocked-skill", "review-skill"])
+            self.assertEqual([item["priority"] for item in queue], ["critical", "high"])
+            for item in queue:
+                self.assertTrue(item["top_findings"])
+                self.assertTrue(item["improvements"])
+                self.assertIn("path", item)
+                self.assertIn("evidence_grade", item)
+
+    def test_repository_optimization_queue_keeps_unscored_evidence_gaps_visible(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            skill_dir = root / "production-skill"
+            skill_dir.mkdir()
+            (skill_dir / "SKILL.md").write_text(
+                """---
+name: production-skill
+description: Inspect supplied evidence and report bounded conclusions. Use when a user requests an evidence review.
+---
+
+1. Inspect the supplied evidence.
+2. Report the result, uncertainty, and limits.
+""",
+                encoding="utf-8",
+            )
+
+            report = audit_repository(root, profile="portable", maturity="production")
+
+            self.assertEqual(report["summary"]["average_quality_score"], 100.0)
+            self.assertEqual(report["summary"]["gate_status"], "PASS")
+            self.assertEqual(report["summary"]["optimization_candidate_count"], 1)
+            candidate = report["optimization_queue"][0]
+            self.assertEqual(candidate["priority"], "medium")
+            self.assertEqual(candidate["top_findings"][0]["code"], "verification.eval-suite-absent")
+
     def test_target_client_evidence_upgrades_grade_only_when_revision_matches(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             skill_dir = Path(temp_dir) / "route-request"

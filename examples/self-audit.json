@@ -119,10 +119,10 @@
   "skill": {
     "name": "skill-qc",
     "path": "<SKILL:skill-qc>",
-    "revision": "d8a3057ebf8be33c5acf73f2338ee302064662bf012713e306974e12b8b79327",
+    "revision": "a52a76682e3d0809942b923539999b6b9c24e434235338d3a2f311216e5f3783",
     "profile": "portable",
     "maturity": "governed",
-    "line_count": 61,
+    "line_count": 65,
     "description_length": 236,
     "quality_score": 100,
     "gate_status": "PASS",
@@ -254,5 +254,5 @@
     "resolved_findings": [],
     "new_findings": []
   },
-  "generated_at": "2026-08-12T01:12:13.1788437-04:00"
+  "generated_at": "2026-08-12T06:00:43.4532457Z"
 }

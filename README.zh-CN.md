@@ -52,20 +52,22 @@ git clone https://github.com/rwang23/skill-qc.git "${CODEX_HOME:-$HOME/.codex}/s
 
 > 请使用 $skill-qc 的仓库模式，审计 `/path/to/repository` 下所有可发现的 Agent Skill。生成匿名中文版 HTML 报告，包含平均分、各维度平均分、安全门与证据分布、每个 Skill 的结果和重复出现的问题。
 
-Agent 会选择对应的确定性命令，保持目标只读，并返回生成的 JSON 和 HTML 文件。
+如果是内部整改，希望报告直接显示 Skill 名称，可以告诉 Agent：
+
+> 请使用 $skill-qc 对 `/path/to/repository` 做只读仓库审计。生成一份保留真实 Skill 名称的私有中文版 HTML 报告，并逐个说明哪些 Skill 值得优先优化、原因是什么、建议怎样改。
+
+Agent 会选择对应的确定性命令，保持目标只读，并返回生成的 JSON 和 HTML 文件。匿名审计还可以单独生成一份私有映射文件，把报告中的匿名编号对应回本地 Skill。
 
 ## 两种报告模式
 
 | 模式 | 目标 | 首要结果 | 保留的细节 |
 |---|---|---|---|
 | 单 Skill | 根目录直接包含 `SKILL.md` 的一个文件夹 | 一个 100 分总分 | 八维评分理由、问题、改进建议、安全门、证据等级和迭代变化 |
-| 仓库 | 包含一个或多个可发现 Skill 的根目录 | 各 Skill 总分的等权平均值 | 维度均分、分数区间、安全门和证据分布、重复问题及逐 Skill 清单 |
+| 仓库 | 包含一个或多个可发现 Skill 的根目录 | 各 Skill 总分的等权平均值 | 维度均分、分数区间、安全门和证据分布、逐 Skill 优化优先级与建议、重复问题及完整清单 |
 
 可以直接打开仓库中的网页示例：
 
-- [英文单 Skill 报告](examples/self-audit.en.html)
 - [中文单 Skill 报告](examples/self-audit.zh-CN.html)
-- [英文匿名仓库报告](examples/repository-audit.en.html)
 - [中文匿名仓库报告](examples/repository-audit.zh-CN.html)
 
 ### 单 Skill 的 01 到 08 维度
@@ -123,7 +125,7 @@ python scripts/skill_audit.py audit /path/to/skill --profile portable --maturity
 python scripts/skill_audit.py audit-repository /path/to/repository --profile portable --maturity library --anonymize --locale zh-CN --json-out repository.json --html-out repository.html
 ```
 
-单 Skill 可以使用 `--baseline previous.json` 比较前后两轮结果，使用 `--evidence evidence.json` 加入与当前版本绑定的 E3/E4 证据。额外的私有路径可以通过 `--redact-root SOURCE=LABEL` 替换。
+单 Skill 可以使用 `--baseline previous.json` 比较前后两轮结果，使用 `--evidence evidence.json` 加入与当前版本绑定的 E3/E4 证据。额外的私有路径可以通过 `--redact-root SOURCE=LABEL` 替换。匿名仓库审计可以增加 `--mapping-out repository.private-map.json`，在本机单独保留可逆的编号映射。
 
 退出码：`0` 表示 `PASS`，`1` 表示 `REVIEW`，`2` 表示 `BLOCKED`，`3` 表示输入无效或执行错误。
 
@@ -131,6 +133,7 @@ python scripts/skill_audit.py audit-repository /path/to/repository --profile por
 
 - CLI 会在保存报告前，把单 Skill 根目录替换成 `<SKILL:name>`，把仓库根目录替换成 `<REPOSITORY>`。
 - `--anonymize` 还会把 Skill 名称、包路径和版本指纹替换为报告内部占位符。
+- `--mapping-out` 需要和 `--anonymize` 一起使用。映射 JSON 会保留真实 Skill 名称、路径和版本，只能私下保存，不能和匿名报告一起公开。
 - 疑似凭据的具体值不会进入报告，只记录模式类别、文件和行号。
 - 仓库发现会跳过常见的生成目录、供应商目录、测试夹具、测试目录和 worktree。
 - 静态规则可能误报或漏报。与上下文有关的问题仍需要人工判断。
