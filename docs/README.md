@@ -16,9 +16,11 @@
 - [`../references/rubric.md`](../references/rubric.md): scoring authority.
 - [`../references/review-protocol.md`](../references/review-protocol.md): audit and iteration workflow.
 - [`../references/evidence-schema.md`](../references/evidence-schema.md): E3/E4 traceability contract.
-- [`../references/report-contract.md`](../references/report-contract.md): JSON and bilingual webpage requirements.
+- [`../references/report-contract.md`](../references/report-contract.md): single-Skill and repository JSON plus bilingual webpage requirements.
 
-Public self-audit examples live in `examples/`. Disposable local runs belong in ignored `.audit-work/`, not in durable documentation.
+Public single-Skill and anonymized repository examples live in `examples/`. README screenshots live in `docs/images/`. Disposable local runs belong in ignored `.audit-work/`, not in durable documentation.
+
+This project does not currently retain `docs/92-report/`, `docs/94-archive/`, or `context/raw/`; if introduced later, they are historical or execution-time surfaces and are not part of the default first-read path.
 
 ## Maintenance rules
 

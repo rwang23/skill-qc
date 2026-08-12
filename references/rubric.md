@@ -1,4 +1,4 @@
-# SkillRigor rubric
+# SkillQC rubric
 
 ## Read the whole result
 
@@ -8,7 +8,7 @@ Read every audit as this tuple:
 artifact quality score / safety gate / evidence grade / profile / maturity
 ```
 
-The 100-point score measures observable package quality under this rubric. The gate preserves non-compensable risk. The evidence grade states how much real behavior has been observed. Profile and maturity decide which constraints apply.
+The 100-point score measures observable package quality under this rubric. It does not score the professional depth, business strategy, commercial value, or task result of the capability. The gate preserves non-compensable risk. The evidence grade states how much real behavior has been observed. Profile and maturity decide which constraints apply.
 
 A Skill can therefore score `100 / PASS / E2`: its package meets every scored contract and its balanced routing fixtures are present, while target-client or real-world behavior remains unproved. This separation prevents evidence from being counted twice and makes a perfect artifact score narrower than an effectiveness claim.
 
@@ -67,11 +67,11 @@ Lexical matching, synthetic prompts, and fixture presence never count as E3. Ext
 
 Maturity never grants permission to perform a risky action.
 
-## Paper mapping
+## Research inspiration
 
-SkillRigor adapts the paper's seven categories rather than reproducing its detector:
+SkillQC was inspired in part by [*What Keeps Agent Skills from Being Reusable? Evidence from 138K SKILL.md Files*](https://arxiv.org/abs/2608.08453). The mapping below records how broad research themes informed this independent rubric; SkillQC does not reproduce the paper's detector.
 
-| Paper category | SkillRigor dimensions |
+| Research theme | SkillQC dimensions |
 |---|---|
 | R1 routing metadata | Routing |
 | R2 instruction body | Executability and Context |
@@ -82,6 +82,12 @@ SkillRigor adapts the paper's seven categories rather than reproducing its detec
 | R7 persona and scope | Executability, Safety, and Maintainability |
 
 Static heuristics can misclassify negated examples, legitimate security material, local-only contracts, and unusual workflows. A score records what this version of the rubric observed; it is not a certification.
+
+## Repository aggregation
+
+Repository mode applies this same rubric independently to every discoverable Skill, then reports the unweighted arithmetic mean of the individual 100-point scores. Each dimension is also averaged against its own maximum weight. The report keeps per-Skill scores, safety-gate distribution, evidence distribution, and recurring findings visible.
+
+The repository average is a portfolio summary, not a new scoring rule. One blocked Skill keeps the repository gate at `BLOCKED`; one review Skill keeps it at `REVIEW` when none is blocked. Names and package paths may be anonymized for a shareable report, but the underlying scores do not change.
 
 ## Versioning
 

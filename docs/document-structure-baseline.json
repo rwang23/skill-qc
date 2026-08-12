@@ -1,11 +1,11 @@
 {
   "schema_version": 2,
   "status": "provisional",
-  "last_reviewed": "2026-08-11",
+  "last_reviewed": "2026-08-12",
   "owner": "rwang23",
   "confirmed_by": null,
   "confirmed_at": null,
-  "project_profiles": ["platform-automation", "public-skill-package"],
+  "project_profiles": ["platform-automation"],
   "document_model": "compact governed Skill package with public examples",
   "number_bands": {
     "91": {"name": "audit", "path": "91-audit", "optional": true},
@@ -14,16 +14,16 @@
     "94": {"name": "archive", "path": "94-archive", "optional": true}
   },
   "lifecycle_roots": {
-    "examples": {
-      "path": "examples",
-      "purpose": "public revision-bound self-audit samples",
-      "retention": "regenerate when product behavior or report output changes"
+    "readme-images": {
+      "path": "images",
+      "purpose": "public screenshots of English and Chinese report examples",
+      "retention": "regenerate when report layout or branding changes"
     }
   },
   "context_model": "no committed private context; disposable runs use ignored .audit-work",
   "context_surfaces": {},
-  "docs_index": "docs/README.md",
-  "structure_authority": "docs/document-structure-baseline.json",
+  "docs_index": "README.md",
+  "structure_authority": "document-structure-baseline.json",
   "content_authorities": {
     "workflow": "SKILL.md",
     "scoring": "references/rubric.md",

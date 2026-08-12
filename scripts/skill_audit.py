@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Evidence-qualified static audit for Agent Skill packages."""
+"""SkillQC: evidence-qualified static audits for Agent Skill packages."""
 
 from __future__ import annotations
 
@@ -131,6 +131,19 @@ TEXT_SUFFIXES = {
     ".txt",
     ".yaml",
     ".yml",
+}
+REPOSITORY_IGNORED_PARTS = {
+    ".audit-work",
+    ".git",
+    ".worktrees",
+    "__pycache__",
+    "build",
+    "dist",
+    "fixtures",
+    "node_modules",
+    "test",
+    "tests",
+    "vendor_imports",
 }
 
 
@@ -897,6 +910,138 @@ def audit_target(
     return _apply_iteration(report, baseline)
 
 
+def _repository_skill_directories(root: Path) -> list[Path]:
+    skill_dirs: list[Path] = []
+    for skill_file in root.rglob("SKILL.md"):
+        relative_parts = skill_file.relative_to(root).parts[:-1]
+        if any(part.lower() in REPOSITORY_IGNORED_PARTS for part in relative_parts):
+            continue
+        skill_dirs.append(skill_file.parent)
+    return sorted(set(skill_dirs), key=lambda path: path.as_posix().lower())
+
+
+def audit_repository(
+    target: str | Path,
+    *,
+    profile: str = "portable",
+    maturity: str = "unclassified",
+    anonymize: bool = False,
+) -> dict[str, Any]:
+    """Audit every discoverable Skill package below one repository root."""
+    target_path = Path(target).resolve()
+    if not target_path.is_dir():
+        raise FileNotFoundError(f"Repository target must be a directory: {target_path}")
+    skill_dirs = _repository_skill_directories(target_path)
+    if not skill_dirs:
+        raise FileNotFoundError(
+            f"Repository contains no discoverable Skill package: {target_path}"
+        )
+
+    skills = [
+        _audit_skill(skill_dir, profile, maturity, None) for skill_dir in skill_dirs
+    ]
+    if anonymize:
+        for index, skill in enumerate(skills, start=1):
+            label = f"Skill {index:03d}"
+            private_path = str(skill["path"])
+            public_path = f"<REPOSITORY>/skill-{index:03d}"
+            skill = _redact_report_paths(skill, [(private_path, public_path)])
+            skill["name"] = label
+            skill["path"] = public_path
+            skill["revision"] = "<ANONYMIZED>"
+            for finding in skill["findings"]:
+                finding["skill_name"] = label
+            skills[index - 1] = skill
+    gate_counts = {gate: 0 for gate in ("PASS", "REVIEW", "BLOCKED")}
+    evidence_counts = {grade: 0 for grade in ("E1", "E2", "E3", "E4")}
+    finding_frequency_map: dict[str, dict[str, Any]] = {}
+    for skill in skills:
+        gate_counts[skill["gate_status"]] += 1
+        evidence_counts[skill["evidence"]["grade"]] += 1
+        for finding in skill["findings"]:
+            entry = finding_frequency_map.setdefault(
+                finding["code"],
+                {
+                    "code": finding["code"],
+                    "dimension": finding["dimension"],
+                    "severity": finding["severity"],
+                    "skill_count": 0,
+                },
+            )
+            entry["skill_count"] += 1
+    if gate_counts["BLOCKED"]:
+        gate_status = "BLOCKED"
+    elif gate_counts["REVIEW"]:
+        gate_status = "REVIEW"
+    else:
+        gate_status = "PASS"
+
+    dimensions = []
+    for dimension_id, weight in DIMENSION_WEIGHTS.items():
+        values = [
+            next(
+                item["score"]
+                for item in skill["dimensions"]
+                if item["id"] == dimension_id
+            )
+            for skill in skills
+        ]
+        average_score = round(sum(values) / len(values), 1)
+        ratio = average_score / weight if weight else 0
+        if ratio >= 0.9:
+            status = "excellent"
+        elif ratio >= 0.75:
+            status = "good"
+        elif ratio >= 0.5:
+            status = "review"
+        else:
+            status = "critical"
+        dimensions.append(
+            {
+                "id": dimension_id,
+                "weight": weight,
+                "average_score": average_score,
+                "average_percent": round(ratio * 100),
+                "status": status,
+                "full_score_count": sum(value == weight for value in values),
+                "skill_count": len(skills),
+            }
+        )
+
+    average_quality_score = round(
+        sum(skill["quality_score"] for skill in skills) / len(skills), 1
+    )
+    skill_scores = [skill["quality_score"] for skill in skills]
+    finding_frequencies = sorted(
+        finding_frequency_map.values(),
+        key=lambda item: (-item["skill_count"], item["code"]),
+    )
+    return {
+        "schema_version": 2,
+        "rubric_version": RUBRIC_VERSION,
+        "mode": "repository",
+        "target": "<REPOSITORY>" if anonymize else str(target_path),
+        "profile": profile,
+        "maturity": maturity,
+        "summary": {
+            "average_quality_score": average_quality_score,
+            "score_scope": "artifact-quality-average",
+            "skill_count": len(skills),
+            "gate_status": gate_status,
+            "gate_counts": gate_counts,
+            "evidence_counts": evidence_counts,
+            "score_range": {
+                "minimum": min(skill_scores),
+                "maximum": max(skill_scores),
+            },
+            "finding_count": sum(len(skill["findings"]) for skill in skills),
+        },
+        "dimensions": dimensions,
+        "finding_frequencies": finding_frequencies,
+        "skills": skills,
+    }
+
+
 def render_report(
     report: dict[str, Any],
     output_path: str | Path,
@@ -905,17 +1050,27 @@ def render_report(
     locale: str = "en",
     template_path: str | Path | None = None,
 ) -> Path:
-    """Render one Skill audit as a self-contained responsive webpage."""
+    """Render a single-Skill or repository audit as a responsive webpage."""
     if locale not in {"en", "zh-CN"}:
         raise ValueError("locale must be 'en' or 'zh-CN'")
-    default_title = "Skill Quality Report" if locale == "en" else "Agent Skill 质量审计报告"
+    report_mode = report.get("mode", "single")
+    if report_mode not in {"single", "repository"}:
+        raise ValueError("report mode must be 'single' or 'repository'")
+    if report_mode == "repository":
+        default_title = (
+            "SkillQC Repository Quality Report" if locale == "en" else "SkillQC 仓库质量报告"
+        )
+        template_name = f"repository-template.{locale}.html"
+    else:
+        default_title = (
+            "SkillQC Quality Report" if locale == "en" else "SkillQC 单 Skill 质量报告"
+        )
+        template_name = f"report-template.{locale}.html"
     generated_at = str(report.get("generated_at") or "not-recorded")
     template = (
         Path(template_path)
         if template_path is not None
-        else Path(__file__).resolve().parents[1]
-        / "assets"
-        / f"report-template.{locale}.html"
+        else Path(__file__).resolve().parents[1] / "assets" / template_name
     )
     template_text = template.read_text(encoding="utf-8-sig")
     payload = json.dumps(report, ensure_ascii=False, separators=(",", ":"))
@@ -963,7 +1118,7 @@ def _parse_redactions(values: list[str]) -> list[tuple[str, str]]:
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Audit one Agent Skill package with explainable scoring and safety gates."
+        description="Audit one Agent Skill or a repository of Skills with explainable scoring and safety gates."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     audit = subparsers.add_parser("audit", help="Audit exactly one Skill package.")
@@ -1000,6 +1155,42 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     audit.add_argument("--stdout-json", action="store_true")
 
+    repository = subparsers.add_parser(
+        "audit-repository", help="Audit every discoverable Skill below one repository root."
+    )
+    repository.add_argument("target")
+    repository.add_argument(
+        "--profile", choices=("portable", "agent-skills", "codex-local"), default="portable"
+    )
+    repository.add_argument(
+        "--maturity",
+        choices=("unclassified", "scaffold", "production", "library", "governed"),
+        default="unclassified",
+    )
+    repository.add_argument(
+        "--anonymize",
+        action="store_true",
+        help="Replace Skill names and package paths with stable report-local labels.",
+    )
+    repository.add_argument("--json-out", required=True)
+    repository.add_argument("--html-out", required=True)
+    repository.add_argument("--title")
+    repository.add_argument(
+        "--observed-at",
+        help="Optional ISO-8601 audit timestamp recorded in JSON and HTML.",
+    )
+    repository.add_argument(
+        "--locale", choices=("en", "zh-CN"), default="en", help="HTML report language."
+    )
+    repository.add_argument(
+        "--redact-root",
+        action="append",
+        default=[],
+        metavar="SOURCE=LABEL",
+        help="Replace a local path prefix in saved JSON/HTML; repeatable.",
+    )
+    repository.add_argument("--stdout-json", action="store_true")
+
     render = subparsers.add_parser("render", help="Render an existing JSON report as HTML.")
     render.add_argument("json_report")
     render.add_argument("html_out")
@@ -1018,20 +1209,29 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         mappings = _parse_redactions(args.redact_root)
-        report = audit_target(
-            args.target,
-            profile=args.profile,
-            maturity=args.maturity,
-            baseline=args.baseline,
-            evidence=args.evidence,
-        )
-        mappings.insert(
-            0,
-            (
-                str(Path(args.target).resolve()),
-                f"<SKILL:{report['skill']['name']}>",
-            ),
-        )
+        if args.command == "audit-repository":
+            report = audit_repository(
+                args.target,
+                profile=args.profile,
+                maturity=args.maturity,
+                anonymize=args.anonymize,
+            )
+            mappings.insert(0, (str(Path(args.target).resolve()), "<REPOSITORY>"))
+        else:
+            report = audit_target(
+                args.target,
+                profile=args.profile,
+                maturity=args.maturity,
+                baseline=args.baseline,
+                evidence=args.evidence,
+            )
+            mappings.insert(
+                0,
+                (
+                    str(Path(args.target).resolve()),
+                    f"<SKILL:{report['skill']['name']}>",
+                ),
+            )
         saved_report = _redact_report_paths(report, mappings)
         if args.observed_at:
             saved_report["generated_at"] = args.observed_at
@@ -1048,11 +1248,17 @@ def main(argv: list[str] | None = None) -> int:
         return 3
 
     summary = saved_report["summary"]
-    print(
-        f"score={summary['quality_score']} gate={summary['gate_status']} "
-        f"evidence={saved_report['evidence']['grade']} skill={saved_report['skill']['name']} "
-        f"findings={summary['finding_count']}"
-    )
+    if saved_report["mode"] == "repository":
+        print(
+            f"average={summary['average_quality_score']} gate={summary['gate_status']} "
+            f"skills={summary['skill_count']} findings={summary['finding_count']}"
+        )
+    else:
+        print(
+            f"score={summary['quality_score']} gate={summary['gate_status']} "
+            f"evidence={saved_report['evidence']['grade']} skill={saved_report['skill']['name']} "
+            f"findings={summary['finding_count']}"
+        )
     print(f"json={Path(args.json_out).resolve()}")
     print(f"html={Path(args.html_out).resolve()}")
     if args.stdout_json:

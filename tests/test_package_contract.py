@@ -6,6 +6,18 @@ from pathlib import Path
 
 
 class PackageContractTests(unittest.TestCase):
+    def test_public_skill_identity_and_agent_prompt_are_consistent(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        skill_text = (root / "SKILL.md").read_text(encoding="utf-8")
+        agent_text = (root / "agents" / "openai.yaml").read_text(encoding="utf-8")
+        eval_data = json.loads((root / "evals" / "evals.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(root.name, "skill-qc")
+        self.assertIn("name: skill-qc", skill_text)
+        self.assertIn('display_name: "SkillQC"', agent_text)
+        self.assertIn("$skill-qc", agent_text)
+        self.assertEqual(eval_data["skill_name"], "skill-qc")
+
     def test_each_routing_fixture_has_human_review_expectations(self) -> None:
         root = Path(__file__).resolve().parents[1]
         data = json.loads((root / "evals" / "evals.json").read_text(encoding="utf-8"))

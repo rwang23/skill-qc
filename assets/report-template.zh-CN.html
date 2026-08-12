@@ -357,12 +357,12 @@
 
     document.getElementById("app").innerHTML = `
       <div class="shell">
-        <header class="masthead"><div class="brand"><span class="brand-mark">SR</span>SkillRigor</div><div class="mast-meta">单 Skill 审计 · 评分规则 ${escapeHtml(report.rubric_version)}</div></header>
+        <header class="masthead"><div class="brand"><span class="brand-mark">QC</span>SkillQC</div><div class="mast-meta">单 Skill 审计 · 评分规则 ${escapeHtml(report.rubric_version)}</div></header>
         <section class="hero">
           <div>
             <div class="eyebrow">Agent Skill 质量审计报告</div>
             <h1>${escapeHtml(skill.name)}</h1>
-            <p class="hero-copy">面向单个 Agent Skill 包的只读评估。质量分、安全门与行为证据相互独立，避免高分掩盖风险，也避免把静态检查包装成真实效果。</p>
+            <p class="hero-copy">面向单个 Agent Skill 包的只读评估。SkillQC 检查路由、执行设计、上下文、资源、安全、可移植性、验证准备度和可维护性，不评价该 Skill 所处理业务的专业深度或实际成效。</p>
             <div class="hero-tags"><span class="tag" data-gate="${escapeHtml(summary.gate_status)}">${escapeHtml(summary.gate_status)}</span><span class="tag">证据 ${escapeHtml(report.evidence.grade)}</span><span class="tag">${escapeHtml(skill.profile)}</span><span class="tag">${escapeHtml(skill.maturity)}</span></div>
           </div>
           <div class="score-orbit" style="--score:${summary.quality_score}"><div class="score-inner"><div class="score-value">${summary.quality_score}</div><div class="score-max">满分 100</div><div class="score-label">Skill 包质量</div></div></div>
@@ -390,7 +390,7 @@
         </section>
 
         <section>
-          <div class="section-head"><div><div class="section-kicker">04 · 如何阅读</div><h2>不只看分数，<br>更要看证据。</h2></div><p class="section-intro">SkillRigor 有意拆开包质量、安全边界和行为证明。</p></div>
+          <div class="section-head"><div><div class="section-kicker">04 · 如何阅读</div><h2>不只看分数，<br>更要看证据。</h2></div><p class="section-intro">SkillQC 把包质量、安全边界和行为证明分开呈现。这些信号都不用于评价 Skill 所处理业务的专业水平。</p></div>
           <div class="method">
             <article class="method-card"><strong>${summary.quality_score}/100 质量分</strong><p>表示评分规则 ${escapeHtml(report.rubric_version)} 在当前包中观察到的结构与契约质量。</p></article>
             <article class="method-card"><strong>${escapeHtml(summary.gate_status)} 安全门</strong><p>Blocker 或高风险问题不能被平均分抵消。</p></article>
@@ -398,7 +398,7 @@
           </div>
         </section>
 
-        <footer><div class="footer-row"><span>由 SkillRigor 生成 · ${escapeHtml(generatedAt)}</span><span>目标版本 ${escapeHtml(skill.revision.slice(0, 12))} · 只读审计</span></div></footer>
+        <footer><div class="footer-row"><span>由 SkillQC 生成 · ${escapeHtml(generatedAt)}</span><span>目标版本 ${escapeHtml(skill.revision.slice(0, 12))} · 只读审计</span></div></footer>
       </div>`;
   </script>
 </body>

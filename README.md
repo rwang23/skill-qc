@@ -1,178 +1,151 @@
-# SkillRigor
+# SkillQC
 
 [简体中文](README.zh-CN.md)
 
-![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-0b5b4b)
-![Self audit 100/100](https://img.shields.io/badge/self--audit-100%2F100-0b5b4b)
-![Gate PASS](https://img.shields.io/badge/gate-PASS-0b5b4b)
-![Evidence E2](https://img.shields.io/badge/evidence-E2-d7ad53)
-![MIT License](https://img.shields.io/badge/license-MIT-d7684e)
+![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-164a38)
+![Self audit 100/100](https://img.shields.io/badge/self--audit-100%2F100-164a38)
+![Gate PASS](https://img.shields.io/badge/gate-PASS-164a38)
+![Evidence E2](https://img.shields.io/badge/evidence-E2-d7a329)
+![MIT License](https://img.shields.io/badge/license-MIT-ee6945)
 
-SkillRigor audits one Agent Skill at a time and turns the result into an explainable 100-point score, an independent safety gate, an evidence grade, and a polished English or Chinese HTML webpage.
+Quality control for Agent Skills. SkillQC audits one Skill or an entire Skill repository without modifying or executing the target, then generates an explainable English or Chinese HTML webpage.
 
-It is intentionally read-only. It does not repair, install, publish, or execute the Skill being reviewed.
+![SkillQC single-Skill report overview](docs/images/single-overview.en.png)
+
+## The boundary
+
+SkillQC evaluates the engineering quality of a Skill package: whether an agent can find it, load it efficiently, follow it safely, and verify or maintain it.
+
+It does not judge the professional depth, business strategy, commercial value, or real-world outcome of the capability the Skill performs. A Shopify Skill, legal Skill, or research Skill can be well packaged even when its domain advice still needs a separate expert review.
+
+## Use it through your agent
+
+### Install for Codex
+
+PowerShell:
+
+```powershell
+git clone https://github.com/rwang23/skill-qc.git "$env:USERPROFILE\.codex\skills\skill-qc"
+```
+
+macOS or Linux:
+
+```bash
+git clone https://github.com/rwang23/skill-qc.git "${CODEX_HOME:-$HOME/.codex}/skills/skill-qc"
+```
+
+Start a new agent session after installation. For another Agent Skills client, clone the repository into that client's Skill discovery directory and keep the folder name `skill-qc`.
+
+### Audit one Skill
+
+Ask your agent:
+
+> Use $skill-qc to audit this Agent Skill read-only. Generate an English HTML report with the total score, all eight dimension scores, reasons, findings, improvements, safety gate, and evidence grade: `/path/to/skill`
+
+For Chinese output:
+
+> Use $skill-qc to audit this Agent Skill read-only and generate the Simplified Chinese HTML report: `/path/to/skill`
+
+### Audit a Skill repository
+
+Ask your agent:
+
+> Use $skill-qc in repository mode to audit every discoverable Agent Skill under `/path/to/repository`. Generate an anonymized English HTML report with the average score, dimension averages, gate and evidence distributions, per-Skill results, and recurring findings.
+
+The agent selects the correct deterministic command, keeps the targets read-only, and returns the generated JSON and HTML files.
+
+## Two report modes
+
+| Mode | Target | Headline | Detail preserved |
+|---|---|---|---|
+| Single Skill | One directory with `SKILL.md` at its root | One 100-point score | Eight reasoned dimensions, findings, improvements, gate, evidence, and iteration delta |
+| Repository | A root containing one or more discoverable Skills | Unweighted average score | Dimension averages, score range, gate and evidence distributions, recurring findings, and per-Skill ledger |
+
+Open the live HTML examples:
+
+- [English single-Skill report](examples/self-audit.en.html)
+- [中文单 Skill 报告](examples/self-audit.zh-CN.html)
+- [English anonymized repository report](examples/repository-audit.en.html)
+- [中文匿名仓库报告](examples/repository-audit.zh-CN.html)
+
+### Single-Skill dimensions 01 to 08
+
+Every point has a visible reason and a concrete next improvement.
+
+![SkillQC eight-dimension detail](docs/images/single-dimensions.en.png)
+
+### Repository overview
+
+Repository mode keeps the average, non-compensable safety gates, evidence levels, and individual Skill results separate.
+
+![SkillQC repository report](docs/images/repository-overview.en.png)
+
+## The 100-point model
+
+| Dimension | Weight | Package question |
+|---|---:|---|
+| Routing | 18 | Can the agent identify what the Skill does and when to invoke it? |
+| Executability | 16 | Does the activated body expose an actionable, bounded workflow? |
+| Context efficiency | 10 | Does first-load context stay focused and progressively disclose detail? |
+| Resource design | 9 | Are scripts, references, assets, and links organized and valid? |
+| Safety | 20 | Are secrets, destructive actions, policy bypasses, and authority boundaries handled? |
+| Portability | 8 | Are local paths, model names, and environment assumptions controlled? |
+| Effectiveness readiness | 12 | Does the package carry the routing and regression evidence required by its declared maturity? |
+| Maintainability | 7 | Do metadata, instructions, tests, and lifecycle declarations agree? |
+
+The score, safety gate, and evidence grade answer different questions:
+
+- `100 / PASS / E2` means every scored artifact contract passed and balanced routing fixtures exist.
+- It does not prove target-client routing, task success, domain correctness, or production readiness.
+- E3 requires a same-revision target-client or representative-task trace. E4 adds a real operating trace and accountable review.
+
+Read the complete [rubric](references/rubric.md), [evidence contract](references/evidence-schema.md), and [report contract](references/report-contract.md).
 
 ## Why this exists
 
-The paper [*What Keeps Agent Skills from Being Reusable? Evidence from 138K SKILL.md Files*](https://arxiv.org/abs/2608.08453) found that the common failures are ordinary packaging defects: weak routing metadata, non-actionable or bloated bodies, and poor resource organization. Its routing experiment also showed that Skills with clean metadata were retrieved more reliably.
+SkillQC was inspired in part by [*What Keeps Agent Skills from Being Reusable? Evidence from 138K SKILL.md Files*](https://arxiv.org/abs/2608.08453). The research sharpened the questions behind this project: can an agent route to a Skill, load it efficiently, follow an executable workflow, and understand its resources and safety boundaries?
 
-SkillRigor turns those findings, the public Agent Skills specification, and practical release controls into a repeatable single-Skill review. It treats a Skill as a routed software artifact, not a long prompt saved in Markdown.
+SkillQC develops those questions into an independent quality-control method, informed by the public Agent Skills specification and practical safety controls. It is not an official implementation or a reproduction of the paper's detector.
 
-## What the report answers
+## Optional CLI and CI use
 
-- What is the total artifact-quality score?
-- Which of the eight dimensions earned or lost points, and why?
-- Is the Skill `PASS`, `REVIEW`, or `BLOCKED`?
-- What evidence supports the result: E1, E2, E3, or E4?
-- What is the smallest concrete improvement for each dimension?
-- What changed since the previous audit round?
+SkillQC uses only the Python standard library. Python 3.11 or newer is recommended.
 
-Open the bundled examples:
-
-- [English self-audit report](examples/self-audit.en.html)
-- [中文自审报告](examples/self-audit.zh-CN.html)
-- [Machine-readable JSON](examples/self-audit.json)
-
-## The scoring model
-
-| Dimension | Weight | What it measures |
-|---|---:|---|
-| Routing | 18 | Name, Description, Trigger, and discovery contract |
-| Executability | 16 | Actionable workflow, explicit output, and stop conditions |
-| Context | 10 | Activated-body focus and progressive disclosure |
-| Resources | 9 | Scripts, references, assets, and link integrity |
-| Safety | 20 | Secrets, policy bypass, destructive actions, and authority boundaries |
-| Portability | 8 | User paths, hardcoded models, and environment assumptions |
-| Effectiveness readiness | 12 | Routing and regression artifacts required by the declared maturity |
-| Maintainability | 7 | Unfinished instructions, metadata alignment, and lifecycle consistency |
-
-The score, gate, and evidence grade are separate on purpose. `100 / PASS / E2` means the package meets every scored artifact contract and has balanced routing fixtures. It does **not** mean real-world effectiveness has been proved. E3 requires a same-revision target-client trace; E4 adds a real operating trace and accountable review.
-
-See the complete [rubric](references/rubric.md), [evidence contract](references/evidence-schema.md), and [report contract](references/report-contract.md).
-
-## Quick start
-
-SkillRigor uses only the Python standard library. Python 3.11 or newer is recommended.
+Single Skill:
 
 ```bash
-git clone https://github.com/rwang23/skill-rigor.git
-cd skill-rigor
-python scripts/skill_audit.py audit /path/to/one-skill \
-  --profile portable \
-  --maturity library \
-  --locale en \
-  --json-out audit.json \
-  --html-out audit.html
+python scripts/skill_audit.py audit /path/to/skill --profile portable --maturity library --locale en --json-out audit.json --html-out audit.html
 ```
 
-For a Simplified Chinese report:
+Repository:
 
 ```bash
-python scripts/skill_audit.py audit /path/to/one-skill \
-  --profile portable \
-  --maturity library \
-  --locale zh-CN \
-  --json-out audit.zh-CN.json \
-  --html-out audit.zh-CN.html
+python scripts/skill_audit.py audit-repository /path/to/repository --profile portable --maturity library --anonymize --locale en --json-out repository.json --html-out repository.html
 ```
 
-The target must be one directory with `SKILL.md` at its root. A portfolio root is rejected so the total and every explanation always refer to one Skill.
+Use `--baseline previous.json` for a single-Skill iteration comparison, `--evidence evidence.json` for revision-bound E3/E4 evidence, and `--redact-root SOURCE=LABEL` for additional private path prefixes.
 
-### Iterate against a baseline
+Exit codes are `0` for `PASS`, `1` for `REVIEW`, `2` for `BLOCKED`, and `3` for invalid input or execution error.
 
-```bash
-python scripts/skill_audit.py audit /path/to/one-skill \
-  --profile portable \
-  --maturity library \
-  --baseline round-1.json \
-  --json-out round-2.json \
-  --html-out round-2.html
-```
+## Privacy and limits
 
-The second report records the score delta, resolved findings, and newly introduced findings. Compare deltas only when the rubric version is unchanged.
-
-### Add E3 or E4 evidence
-
-```bash
-python scripts/skill_audit.py audit /path/to/one-skill \
-  --profile portable \
-  --maturity governed \
-  --evidence evidence.json \
-  --json-out audit.json \
-  --html-out audit.html
-```
-
-Evidence is credited only when its `target_revision` matches the SHA-256 of the current `SKILL.md`.
-
-### Render an existing JSON report
-
-```bash
-python scripts/skill_audit.py render audit.json audit.zh-CN.html --locale zh-CN
-```
-
-### Exit codes
-
-| Code | Meaning |
-|---:|---|
-| 0 | `PASS` |
-| 1 | `REVIEW` |
-| 2 | `BLOCKED` |
-| 3 | Invalid input or execution error |
-
-## Privacy by default
-
-The CLI replaces the absolute target root with `<SKILL:name>` before saving JSON or HTML. Add repeatable mappings for any other private prefix:
-
-```bash
---redact-root "/private/workspace=<WORKSPACE>"
-```
-
-Credential-shaped values are never written to the report. Only the pattern class, file, and line are recorded.
-
-## Use it as an Agent Skill
-
-The repository root is a valid Skill package. Place or clone it into the Skill discovery directory used by your agent, keeping the folder name `skill-rigor`. The routing Description is deliberately narrow: it activates for a read-only audit of one Agent Skill, not for general code review, Skill creation, or portfolio scanning.
-
-The active workflow is in [SKILL.md](SKILL.md). Detailed rules stay in `references/`, the deterministic implementation stays in `scripts/`, and the two report templates stay in `assets/` so startup context remains small.
+- The CLI replaces the single target root with `<SKILL:name>` and a repository root with `<REPOSITORY>` before saving reports.
+- `--anonymize` also replaces Skill names, package paths, and revision fingerprints with report-local placeholders.
+- Secret-shaped values never enter the report. Only the pattern class, file, and line are recorded.
+- Repository discovery ignores common generated, vendor, fixture, test, and worktree directories.
+- Static rules can produce false positives or false negatives. Context-sensitive findings still need human adjudication.
+- The auditor never executes scripts from the target package.
+- A clean report is not permission to install, publish, or run a Skill.
 
 ## Development
-
-Run the complete regression suite:
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-Generate the self-audit:
-
-```bash
-python scripts/skill_audit.py audit . \
-  --profile portable \
-  --maturity governed \
-  --locale en \
-  --observed-at 2026-08-11T23:21:19-04:00 \
-  --json-out examples/self-audit.json \
-  --html-out examples/self-audit.en.html
-
-python scripts/skill_audit.py render \
-  examples/self-audit.json \
-  examples/self-audit.zh-CN.html \
-  --locale zh-CN
-```
-
 Any detector or scoring change needs a focused failing fixture, a passing regression test, and a rubric-version review. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Limits
-
-- Static rules can produce false positives or false negatives, especially for security examples, negation, persona language, and unusual local contracts.
-- E1/E2 results do not prove target-client routing or task success.
-- The auditor does not execute scripts from the target package.
-- The paper studies public Skills; private enterprise Skills may follow a different distribution.
-- A clean report is not permission to install, publish, or run a Skill.
-
-## Security
-
-Please report suspected vulnerabilities through [GitHub Security Advisories](https://github.com/rwang23/skill-rigor/security/advisories/new). Do not put live credentials or private audit payloads in a public issue. See [SECURITY.md](SECURITY.md).
+Report suspected vulnerabilities through [GitHub Security Advisories](https://github.com/rwang23/skill-qc/security/advisories/new). Do not put live credentials or private audit payloads in a public issue.
 
 ## License
 

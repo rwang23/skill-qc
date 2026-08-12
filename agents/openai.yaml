@@ -1,4 +1,4 @@
 interface:
-  display_name: "SkillRigor"
-  short_description: "Explainable quality audits for one Agent Skill"
-  default_prompt: "Use $skill-rigor to audit this single Skill package read-only and generate an explainable English or Chinese HTML quality report."
+  display_name: "SkillQC"
+  short_description: "Quality audits for one Skill or a Skill repository"
+  default_prompt: "Use $skill-qc to audit this Agent Skill or Skill repository read-only and generate an explainable English or Chinese HTML quality report."

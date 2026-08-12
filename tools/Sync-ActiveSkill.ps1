@@ -20,6 +20,8 @@ $packageFiles = @(
     'agents\openai.yaml',
     'assets\report-template.en.html',
     'assets\report-template.zh-CN.html',
+    'assets\repository-template.en.html',
+    'assets\repository-template.zh-CN.html',
     'evals\evals.json',
     'references\evidence-schema.md',
     'references\report-contract.md',

@@ -1,6 +1,6 @@
 # Behavioral evidence contract
 
-SkillRigor accepts evidence for one Skill only.
+SkillQC accepts external E3/E4 evidence for one Skill at a time. Repository mode summarizes the evidence already available inside each package and does not apply one shared trace to multiple Skills.
 
 ```json
 {

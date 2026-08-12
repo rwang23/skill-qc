@@ -3,9 +3,10 @@ from __future__ import annotations
 import tempfile
 import unittest
 import json
+import json
 from pathlib import Path
 
-from scripts.skill_audit import audit_target
+from scripts.skill_audit import audit_repository, audit_target
 
 
 class SkillAuditBehaviorTests(unittest.TestCase):
@@ -587,6 +588,108 @@ description: Perform {name} workflow steps. Use when a matching {name} task is r
                 "one Skill directory containing SKILL.md",
             ):
                 audit_target(root, profile="portable", maturity="scaffold")
+
+    def test_repository_audit_discovers_skills_and_reports_average_scores(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            skill_dirs = []
+            for name, description in (
+                (
+                    "alpha-skill",
+                    "Inspect release evidence. Use when a user requests a release evidence review.",
+                ),
+                (
+                    "beta-skill",
+                    "Summarize supplied notes.",
+                ),
+            ):
+                skill_dir = root / "collection" / name
+                skill_dir.mkdir(parents=True)
+                (skill_dir / "SKILL.md").write_text(
+                    f"""---
+name: {name}
+description: {description}
+---
+
+1. Inspect the supplied input.
+2. Report the result and any limits.
+""",
+                    encoding="utf-8",
+                )
+                skill_dirs.append(skill_dir)
+
+            ignored = root / ".git" / "vendor-skill"
+            ignored.mkdir(parents=True)
+            (ignored / "SKILL.md").write_text("not a package", encoding="utf-8")
+            fixture = root / "tooling" / "tests" / "bad-skill"
+            fixture.mkdir(parents=True)
+            (fixture / "SKILL.md").write_text("not a package", encoding="utf-8")
+
+            report = audit_repository(
+                root,
+                profile="portable",
+                maturity="scaffold",
+            )
+            individual_scores = [
+                audit_target(path, profile="portable", maturity="scaffold")["summary"][
+                    "quality_score"
+                ]
+                for path in skill_dirs
+            ]
+
+            self.assertEqual(report["mode"], "repository")
+            self.assertEqual(report["summary"]["skill_count"], 2)
+            self.assertEqual(
+                report["summary"]["average_quality_score"],
+                round(sum(individual_scores) / len(individual_scores), 1),
+            )
+            self.assertEqual(sum(report["summary"]["gate_counts"].values()), 2)
+            self.assertEqual(sum(report["summary"]["evidence_counts"].values()), 2)
+            self.assertEqual(report["summary"]["score_range"]["maximum"], max(individual_scores))
+            self.assertEqual(report["summary"]["score_range"]["minimum"], min(individual_scores))
+            self.assertGreaterEqual(len(report["finding_frequencies"]), 1)
+            self.assertEqual([skill["name"] for skill in report["skills"]], ["alpha-skill", "beta-skill"])
+            self.assertEqual(len(report["dimensions"]), 8)
+
+    def test_repository_audit_can_anonymize_skill_names_and_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            for name in ("private-orders", "internal-routing"):
+                skill_dir = root / name
+                skill_dir.mkdir()
+                description = (
+                    "Helper"
+                    if name == "private-orders"
+                    else "Inspect supplied evidence. Use when a user requests a bounded evidence review."
+                )
+                (skill_dir / "SKILL.md").write_text(
+                    f"""---
+name: {name}
+description: {description}
+---
+
+1. Inspect the input.
+2. Report the result and limits.
+""",
+                    encoding="utf-8",
+                )
+
+            report = audit_repository(
+                root,
+                profile="portable",
+                maturity="scaffold",
+                anonymize=True,
+            )
+            serialized = json.dumps(report, ensure_ascii=False)
+
+            self.assertEqual(
+                [skill["name"] for skill in report["skills"]],
+                ["Skill 001", "Skill 002"],
+            )
+            self.assertTrue(all(skill["revision"] == "<ANONYMIZED>" for skill in report["skills"]))
+            self.assertNotIn("private-orders", serialized)
+            self.assertNotIn("internal-routing", serialized)
+            self.assertNotIn(str(root), serialized)
 
     def test_target_client_evidence_upgrades_grade_only_when_revision_matches(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

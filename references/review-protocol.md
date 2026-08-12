@@ -10,6 +10,8 @@
 
 The baseline answers “what did this rubric observe?” It does not prove that every heuristic finding is valid or that the Skill succeeds in real tasks.
 
+For repository mode, bind one repository root and record how many discoverable Skills were included. Preserve the average score, dimension averages, gate distribution, evidence distribution, recurring findings, and per-Skill ledger. Use `--anonymize` for a shareable report when package names are private.
+
 ## Pass 2: context adjudication
 
 Review blockers and high findings first. Record one outcome for each disputed item:
@@ -54,3 +56,5 @@ Lead with the tuple: score, gate, evidence, profile, maturity. Then present:
 5. residual uncertainty and the next decisive test.
 
 Never use “certified,” “secure,” “production-ready,” or “effective” from E1/E2 alone.
+
+Never interpret a single-Skill score or repository average as a judgment of business expertise, domain depth, commercial value, or real-world outcomes. Those require a separate domain-specific evaluation.

@@ -1,8 +1,17 @@
 # Changelog
 
+## 1.1.0 - 2026-08-12
+
+- Adopted SkillQC as the public project and Agent Skill identity.
+- Added repository mode with average score, dimension averages, gate and evidence distributions, per-Skill results, and recurring findings.
+- Added anonymization for shareable repository reports.
+- Added responsive English and Simplified Chinese repository report templates.
+- Clarified that SkillQC evaluates Skill-package engineering quality, not business expertise or domain outcomes.
+- Reworked both READMEs around Agent-first installation and natural-language usage, with report screenshots.
+
 ## 1.0.0 - 2026-08-11
 
-- Renamed the public project and Skill to SkillRigor.
+- Established the first public single-Skill quality-control release.
 - Narrowed the product contract to exactly one Skill per audit and removed portfolio output.
 - Separated the 100-point artifact-quality score from the E1–E4 behavioral evidence grade.
 - Added reasons, deductions, and improvements for every scoring dimension.
