@@ -1,14 +1,23 @@
 # SkillQC
 
-[简体中文](README.zh-CN.md)
-
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-164a38)
-![Self audit 100/100](https://img.shields.io/badge/self--audit-100%2F100-164a38)
-![Gate PASS](https://img.shields.io/badge/gate-PASS-164a38)
-![Evidence E2](https://img.shields.io/badge/evidence-E2-d7a329)
 ![MIT License](https://img.shields.io/badge/license-MIT-ee6945)
 
-Quality control for Agent Skills. SkillQC audits one Skill or an entire Skill repository without modifying or executing the target, then generates an explainable English or Chinese HTML webpage.
+[简体中文](README.zh-CN.md)
+
+SkillQC audits one Agent Skill or an entire repository without modifying or executing the target, then returns explainable JSON and English or Simplified Chinese HTML reports.
+
+[Install for Codex](#install-for-codex) · [Audit one Skill](#audit-one-skill) · [Audit a repository](#audit-a-skill-repository) · [Report examples](#two-report-modes)
+
+Use it to:
+
+- spot discoverability, safety, and maintainability gaps in a package;
+- compare findings across a Skill repository;
+- share prioritized improvements in JSON or HTML reports.
+
+![Illustrative SkillQC report flow using sample Skill metadata, not a real audit result](assets/readme-demo.gif)
+
+*Illustrative report flow with sample package data. It does not measure real-world Skill effectiveness. [Open the poster](assets/readme-demo-poster.png).*
 
 ![SkillQC single-Skill report overview](docs/images/single-overview.en.png)
 
@@ -20,7 +29,7 @@ It does not judge the professional depth, business strategy, commercial value, o
 
 ## Standalone by design
 
-SkillQC runs on Python 3.11 or later and the Python standard library. The rubric, auditor, report templates, schemas, route fixtures, and tests all live in this repository. It does not call Skill Evolution, Agent Skill Creator, a platform-managed Skill Creator, or private local configuration.
+SkillQC runs on Python 3.11 or later and the Python standard library. The README provides Windows PowerShell and macOS/Linux installation examples; agent skill discovery paths vary by client. The rubric, auditor, report templates, schemas, route fixtures, and tests all live in this repository. It does not call Skill Evolution, Agent Skill Creator, a platform-managed Skill Creator, or private local configuration.
 
 Other tools may consume SkillQC JSON as optional evidence. SkillQC does not require them, and an audit result does not grant permission to edit the target.
 
@@ -28,19 +37,25 @@ Other tools may consume SkillQC JSON as optional evidence. SkillQC does not requ
 
 ### Install for Codex
 
+Codex automatically discovers Skills in the personal directory below or in a repository's `.agents/skills/` folder. The current personal path is documented in the [Codex Skills guide](https://learn.chatgpt.com/docs/build-skills).
+
+If your client already discovers an installed copy of `skill-qc`, reuse it instead of cloning a second copy.
+
 PowerShell:
 
-```powershell
-git clone https://github.com/rwang23/skill-qc.git "$env:USERPROFILE\.codex\skills\skill-qc"
-```
+~~~powershell
+New-Item -ItemType Directory -Force "$HOME\.agents\skills" | Out-Null
+git clone https://github.com/rwang23/skill-qc.git "$HOME\.agents\skills\skill-qc"
+~~~
 
 macOS or Linux:
 
-```bash
-git clone https://github.com/rwang23/skill-qc.git "${CODEX_HOME:-$HOME/.codex}/skills/skill-qc"
-```
+~~~bash
+mkdir -p "$HOME/.agents/skills"
+git clone https://github.com/rwang23/skill-qc.git "$HOME/.agents/skills/skill-qc"
+~~~
 
-Start a new agent session after installation. For another Agent Skills client, clone the repository into that client's Skill discovery directory and keep the folder name `skill-qc`.
+Codex discovers the folder automatically. Restart Codex if the Skill is not available, then invoke it with `$skill-qc`. For another Agent Skills client, use that client's documented discovery directory and keep the folder name `skill-qc`.
 
 ### Audit one Skill
 

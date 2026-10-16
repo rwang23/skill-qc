@@ -3,12 +3,19 @@
 [English](README.md)
 
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-164a38)
-![自审 100/100](https://img.shields.io/badge/自审-100%2F100-164a38)
-![安全门 PASS](https://img.shields.io/badge/安全门-PASS-164a38)
-![证据 E2](https://img.shields.io/badge/证据-E2-d7a329)
 ![MIT License](https://img.shields.io/badge/license-MIT-ee6945)
 
-SkillQC 是 Agent Skill 的质量检查工具。它可以审计一个 Skill，也可以审计整个 Skill 仓库。工具不会修改或执行目标，最终会生成一份可解释的中文或英文 HTML 网页报告。
+只读检查一个 Agent Skill 或整个 Skill 仓库，生成可解释的 JSON 和中英文 HTML 报告，帮助你找到问题、比较优先级并决定下一步改什么。工具不会修改或执行目标。
+
+[安装到 Codex](#安装到-codex) · [审计单个 Skill](#审计单个-skill) · [审计整个仓库](#审计整个-skill-仓库) · [查看报告](#两种报告模式)
+
+- 找出发现入口、安全控制和可维护性方面的缺口。
+- 比较一个仓库中反复出现的问题。
+- 用 JSON 或 HTML 报告向协作者说明改进理由。
+
+![SkillQC 示意动图：从 Skill 包得到可解释的问题与改进建议](assets/readme-demo.gif)
+
+*使用样例数据说明审阅流程，不代表真实审计结果或任务效果。[查看静态图](assets/readme-demo-poster.png)。*
 
 ![SkillQC 单 Skill 报告概览](docs/images/single-overview.zh-CN.png)
 
@@ -28,19 +35,23 @@ SkillQC 只需要 Python 3.11 或更高版本，并且全部代码只使用 Pyth
 
 ### 安装到 Codex
 
+Codex 会从个人目录 `$HOME/.agents/skills` 或项目内 `.agents/skills/` 发现 Skill，详见 [Codex 官方说明](https://learn.chatgpt.com/docs/build-skills)。如果客户端已经能发现一份 `skill-qc`，请复用已有安装。
+
 PowerShell：
 
 ```powershell
-git clone https://github.com/rwang23/skill-qc.git "$env:USERPROFILE\.codex\skills\skill-qc"
+New-Item -ItemType Directory -Force "$HOME\.agents\skills" | Out-Null
+git clone https://github.com/rwang23/skill-qc.git "$HOME\.agents\skills\skill-qc"
 ```
 
 macOS 或 Linux：
 
 ```bash
-git clone https://github.com/rwang23/skill-qc.git "${CODEX_HOME:-$HOME/.codex}/skills/skill-qc"
+mkdir -p "$HOME/.agents/skills"
+git clone https://github.com/rwang23/skill-qc.git "$HOME/.agents/skills/skill-qc"
 ```
 
-安装后新建一个 Agent 会话。其他支持 Agent Skills 的客户端，只需要把仓库克隆到对应的 Skill 发现目录，并保持文件夹名称为 `skill-qc`。
+Codex 会自动发现该目录；如果没有出现，请重启 Codex，然后使用 `$skill-qc` 调用。其他支持 Agent Skills 的客户端，请使用其文档规定的发现目录，并保持文件夹名称为 `skill-qc`。
 
 ### 审计单个 Skill
 
